@@ -1,5 +1,3 @@
-remote_theme: mmistakes/minimal-mistakes@4.27.3
+remote_theme: mmistakes/minimal-mistakes@4.24.0
 plugins:
   - jekyll-remote-theme
-title: Leo's website
-description: still under construction... what are you staring at??
