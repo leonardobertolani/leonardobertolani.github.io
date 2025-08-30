@@ -1,0 +1,79 @@
+@charset "UTF-8";
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: #333; /* Grigio scuro per il testo */
+}
+
+.overlay-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex; /* Flexbox per centrare il contenuto */
+  flex-direction: column;
+  justify-content: center; /* Centratura orizzontale */
+  align-items: center; /* Centratura verticale */
+  background-color: #f8f8f8; /* Sfondo quasi bianco */
+  background-image: url("/assets/images/aurora.jpg"); /* Immagine di sfondo */
+  background-size: cover; /* L'immagine copre l'intera area */
+  background-position: center; /* Centra l'immagine */
+}
+
+/* Stile per il nome "Leonardo Bertolani" */
+.site-title {
+  font-size: 4.5em; /* Aumentiamo la dimensione del font */
+  font-weight: 350; /* Font sottile per un tocco minimalista */
+  margin-bottom: 25px;
+  text-transform: uppercase;
+  color: #ddd; /* Bianco per il testo sopra l'immagine */
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Ombra per migliorare la leggibilità */
+}
+
+/* Stili per il contenitore a forma di riquadro */
+.card-container {
+  text-transform: uppercase;
+  background-color: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  padding: 20px 50px;
+  border-radius: 15px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  /*border: 1px solid rgba(255, 255, 255, 0.1);*/
+  width: 65%; /* ✨ Aggiornato: il contenitore occupa il 50% della larghezza */
+}
+
+@media (max-width: 768px) {
+  .card-container {
+    width: 85%; /* Su schermi piccoli, il 50% potrebbe essere troppo poco, quindi lo aumentiamo */
+  }
+}
+/* Stili per la barra di navigazione */
+.main-nav {
+  display: flex;
+  justify-content: center;
+  gap: 35px;
+}
+
+.nav-item {
+  font-size: 1.2em;
+  text-decoration: none;
+  color: #ddd; /* Ora i link devono essere bianchi per contrastare il grigio del riquadro */
+  font-weight: bold;
+  transition: color 0.3s ease;
+}
+
+.nav-item:hover {
+  color: #63c66b; /*#2289ff;*/
+}
+
+/* Potrebbe essere necessario riposizionare l'overlay per il tuo nome e la nav */
+.overlay-content {
+  text-align: center;
+  color: #fff;
+}
+
+/*# sourceMappingURL=main.css.map */
