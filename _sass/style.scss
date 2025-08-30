@@ -1,6 +1,14 @@
 
 @import "colors";
 
+// Mixin per generare variabili CSS da una mappa
+@mixin theme($theme) {
+  --bg-image: #{map-get($theme, bg-image)};
+  --main-color: #{map-get($theme, main-color)};
+  --accent-color: #{map-get($theme, accent-color)};
+  --card-bg: #{map-get($theme, card-bg)};
+}
+
 body, html {
     margin: 0;
     padding: 0;
@@ -20,7 +28,7 @@ body, html {
     justify-content: center; /* Centratura orizzontale */
     align-items: center; /* Centratura verticale */
     background-color: #f8f8f8; /* Sfondo quasi bianco */
-    background-image: url($bg-image); /* Immagine di sfondo */
+    background-image: var(--bg-image); /* Immagine di sfondo */
     background-size: cover; /* L'immagine copre l'intera area */
     background-position: center; /* Centra l'immagine */
 }
@@ -30,21 +38,21 @@ body, html {
     font-weight: 350; /* Font sottile per un tocco minimalista */
     margin-bottom: 25px;
     text-transform: uppercase;
-    color: $main-color; /* Bianco per il testo sopra l'immagine */
+    color: var(--main-color); /* Bianco per il testo sopra l'immagine */
     text-shadow: 2px 2px 4px rgba(0,0,0,0.5); /* Ombra per migliorare la leggibilità */
 }
 
 /* Stili per il contenitore a forma di riquadro */
 .card-container {
     text-transform: uppercase;
-    background-color: $card-bg;
+    background-color: var(--card-bg);
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
     padding: 20px 50px;
     border-radius: 15px;
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
     /*border: 1px solid rgba(255, 255, 255, 0.1);*/
-    width: 65%; /* ✨ Aggiornato: il contenitore occupa il 50% della larghezza */
+    width: 1200px;
 }
 
 @media (max-width: 768px) {
@@ -53,27 +61,95 @@ body, html {
     }
 }
 
-/* Stili per la barra di navigazione */
-.main-nav {
-    display: flex;
-    justify-content: center;
-    gap: 35px;
-}
 
 .nav-item {
     font-size: 1.2em;
     text-decoration: none;
-    color: $main-color; /* Ora i link devono essere bianchi per contrastare il grigio del riquadro */
+    color: var(--main-color); /* Ora i link devono essere bianchi per contrastare il grigio del riquadro */
     font-weight: bold;
     transition: color 0.3s ease;
 }
 
 .nav-item:hover {
-    color: $accent-color;/*#2289ff;*/
+    color: var(--accent-color);/*#2289ff;*/
 }
 
 /* Potrebbe essere necessario riposizionare l'overlay per il tuo nome e la nav */
 .overlay-content {
     text-align: center;
     color: #fff;
+}
+
+
+
+/* Genera i temi specifici */
+@each $name, $theme in $themes {
+  html[data-theme="#{$name}"] {
+    @include theme($theme);
+  }
+}
+
+/* Stili del bottone (aggiungi al tuo file) */
+.main-nav {
+    display: flex;
+    justify-content: space-between; /* Spinge i contenitori agli estremi */
+    align-items: center;
+    position: relative;
+    padding: 0 15px; /* Spazio per evitare che i link tocchino i bordi */
+}
+
+/* Stili per i contenitori dei link */
+.nav-left, .nav-right {
+    display: flex; /* Rendi anche questi contenitori dei flexbox */
+    gap: 35px; /* Mantieni lo spazio tra i link */
+}
+
+/* Stili del bottone */
+#theme-switcher {
+    position: absolute;
+    top: 50%;
+    left: 50%; /* ✨ Nuovo: Posiziona il bottone al 50% dal lato sinistro */
+    transform: translate(-50%, -50%); /* ✨ Nuovo: Centratura completa */
+    transition: transform 0.3s ease; /* Aggiungi la transizione */
+    z-index: 10; /* ✨ Nuovo: Assicura che il bottone sia sopra gli altri elementi */
+    
+    font-size: 1.2em;
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s ease;
+    cursor: pointer;
+    display: flexbox;
+    border-radius: 20px;
+    padding: 30px 30px;
+    background-color: var(--accent-color);
+    backdrop-filter: blur(5px);
+    border: none;
+    cursor: pointer;
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+#theme-switcher:hover {
+    transform: translateY(-50%) translateX(-50%) scale(1.1); /* Ingrandisce del 10% */
+}
+
+#theme-switcher:active {
+    animation: toggle 0.5s; /* Applica l'animazione */
+}
+
+#theme-switcher i {
+    font-size: 1.5em; /* Rendi l'icona leggermente più grande */
+    color: #ddd;
+}
+
+@keyframes toggle {
+    0% {
+        transform: translateY(-50%) translateX(-50%) scale(1);
+    }
+    50% {
+        transform: translateY(-50%) translateX(-50%) scale(1.1); /* Pulsazione massima */
+    }
+    100% {
+        transform: translateY(-50%) translateX(-50%) scale(1);
+    }
 }

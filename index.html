@@ -1,14 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Leonardo Bertolani</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <link rel="stylesheet" href="/assets/css/main.css">
-</head>
-<body>
+---
+layout: home
+title: Leonardo Bertolani
+permalink: /
+---
 
-    <div class="overlay-container">
+<div class="overlay-container">
     <h1 class="site-title">Leonardo Bertolani</h1>
     <div class="card-container">
         <nav class="main-nav">
@@ -30,7 +26,7 @@
 </div>
 
 <script>
-    const themes = ["jupyter","moon","aurora"];
+    const themes = {{ site.themes_list | jsonify }};
     const html = document.documentElement;
     const switcher = document.getElementById('theme-switcher');
 
@@ -45,6 +41,3 @@
         html.setAttribute('data-theme', nextTheme);
     });
 </script>
-
-</body>
-</html>

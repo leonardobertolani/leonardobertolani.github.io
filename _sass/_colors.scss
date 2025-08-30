@@ -2,27 +2,29 @@ $current-theme: aurora;
 
 $themes: (
   jupyter: (
-    bg-image: '/assets/images/jupyter.jpg',
+    bg-image: 'url(/assets/images/jupyter.jpg)',
     main-color: #ddd,
     accent-color: #27374a,
     card-bg: rgba(255, 255, 255, 0.10)
   ),
   moon: (
-    bg-image: '/assets/images/moon.jpg',
+    bg-image: 'url(/assets/images/moon.jpg)',
     main-color: #ddd,
-    accent-color: #2289ff,
+    accent-color: #20a4f5,
     card-bg: rgba(255, 255, 255, 0.10)
   ),
   aurora: (
-    bg-image: '/assets/images/aurora.jpg',
+    bg-image: 'url(/assets/images/aurora.jpg)',
     main-color: #ddd,
     accent-color: #63c66b,
     card-bg: rgba(255, 255, 255, 0.10)
   )
 );
 
+/*
 // Recupera i valori dal tema selezionato
 $bg-image: map-get(map-get($themes, $current-theme), bg-image);
 $main-color: map-get(map-get($themes, $current-theme), main-color);
 $accent-color: map-get(map-get($themes, $current-theme), accent-color);
 $card-bg: map-get(map-get($themes, $current-theme), card-bg);
+*/

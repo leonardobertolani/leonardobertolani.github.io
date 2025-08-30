@@ -1,0 +1,11 @@
+title: Leonardo Bertolani
+description: Leonardo Bertolani website
+url: "https://leonardobertolani.github.io" # Sostituisci con il tuo URL GitHub Pages
+
+
+# La tua lista di temi
+themes_list: ["jupyter", "moon", "aurora"]
+
+# Altre impostazioni (opzionali, ma consigliate)
+markdown: kramdown
+highlighter: rouge
