@@ -19,6 +19,7 @@ const { pageTitle } = Astro.props;
          transition: background-image 0.5s ease-in-out;
        }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   </head>
   <!-- We remove the hardcoded background class here and rely on the script below -->
   <body class="bg-gray-900 text-white min-h-screen flex justify-center items-center p-4 bg-cover bg-center bg-fixed">
@@ -27,44 +28,179 @@ const { pageTitle } = Astro.props;
 
     <!-- CLIENT-SIDE SCRIPT -->
     <script>
-      // TypeScript allows us to define the shape of our theme object
-      // This is optional, but helpful for autocomplete!
-      type Theme = {
-        bg: string;
-        name: string;
-      };
+        // TypeScript allows us to define the shape of our theme object
+        // This is optional, but helpful for autocomplete!
+        type Theme = {
+            bg: string;
+            name: string;
+        };
 
-      const themes: Theme[] = [
-        { bg: '/backgrounds/aurora.jpg', name: 'Aurora' },
-        { bg: '/backgrounds/jupyter.jpg', name: 'Jupyter' },
-        { bg: '/backgrounds/moon.jpg', name: 'Moon' }
-      ];
+        const themes: Theme[] = [
+            { bg: '/backgrounds/aurora.jpg', name: 'Aurora' },
+            { bg: '/backgrounds/jupyter.jpg', name: 'Jupyter' },
+            { bg: '/backgrounds/moon.jpg', name: 'Moon' }
+        ];
 
-      let currentThemeIndex = 0;
-      const body = document.body;
-      const btn = document.getElementById('theme-btn');
+        let currentThemeIndex = 0;
+        const body = document.body;
+        const btn = document.getElementById('theme-btn');
 
-      function applyTheme(index: number) {
-        const theme = themes[index];
-        if (body) {
-            body.style.backgroundImage = `url('${theme.bg}')`;
+        function applyTheme(index: number) {
+            const theme = themes[index];
+            if (body) {
+                body.style.backgroundImage = `url('${theme.bg}')`;
+            }
+            localStorage.setItem('userTheme', index.toString());
         }
-        localStorage.setItem('userTheme', index.toString());
-      }
 
-      const savedTheme = localStorage.getItem('userTheme');
-      if (savedTheme) {
-        currentThemeIndex = parseInt(savedTheme);
-      }
-      applyTheme(currentThemeIndex);
+        const savedTheme = localStorage.getItem('userTheme');
+        if (savedTheme) {
+            currentThemeIndex = parseInt(savedTheme);
+        }
+        applyTheme(currentThemeIndex);
 
-      if (btn) {
-        btn.addEventListener('click', () => {
-          currentThemeIndex = (currentThemeIndex + 1) % themes.length;
-          applyTheme(currentThemeIndex);
+        if (btn) {
+            btn.addEventListener('click', () => {
+            currentThemeIndex = (currentThemeIndex + 1) % themes.length;
+            applyTheme(currentThemeIndex);
+            });
+        }
+
+        // Scripting for the overlay
+        // 1. Tell TypeScript that 'marked' exists (loaded from CDN)
+        declare const marked: any;
+
+        // 2. Define our elements with specific types
+        // The 'as HTMLElement' tells TypeScript: "Trust me, this exists in the HTML."
+        const modal = document.getElementById('project-modal') as HTMLDivElement;
+        const backdrop = document.getElementById('modal-backdrop') as HTMLDivElement;
+        const content = document.getElementById('modal-content') as HTMLDivElement;
+        const closeBtn = document.getElementById('close-modal') as HTMLButtonElement;
+
+        const mTitle = document.getElementById('modal-title') as HTMLHeadingElement;
+        const mImage = document.getElementById('modal-image') as HTMLImageElement;
+        const mTags = document.getElementById('modal-tags') as HTMLDivElement;
+        const mBody = document.getElementById('modal-body') as HTMLDivElement;
+
+        // 3. Typed Function: We explicitly say 'card' is an HTMLElement
+        function openModal(card: HTMLElement) {
+            if (!modal || !content) return; // Safety check
+
+            // Get data attributes
+            const repo = card.getAttribute('data-repo');
+            const title = card.getAttribute('data-title');
+            const image = card.getAttribute('data-image');
+            // parse tags safely
+            const rawTags = card.getAttribute('data-tags');
+            const tags = rawTags ? JSON.parse(rawTags) : [];
+
+            // Fill the modal
+            if (mTitle && title) mTitle.innerText = title;
+            if (mImage && image) mImage.src = image;
+            
+            if (mTags) {
+                mTags.innerHTML = tags.map((t: string) => 
+                    `<span class="px-2 py-1 bg-white/10 rounded text-xs">${t}</span>`
+                ).join('');
+            }
+
+            // Reset body to loading state
+            if (mBody) {
+                mBody.innerHTML = '<div class="flex items-center gap-2"><div class="w-4 h-4 border-2 border-green-500 border-t-transparent rounded-full animate-spin"></div> Fetching README...</div>';
+            }
+
+            // Show Modal
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+            if (backdrop) backdrop.classList.remove('opacity-0');
+            if (content) content.classList.remove('opacity-0', 'scale-95');
+            }, 10);
+
+            // Fetch GitHub Data
+            if (repo && mBody) {
+            fetch(`https://api.github.com/repos/${repo}/readme`)
+                .then(res => {
+                    if (!res.ok) throw new Error("Not found");
+                    return res.json();
+                })
+                .then(data => {
+                // Fix for Emojis/UTF-8 characters in README
+                const decodedContent = decodeURIComponent(escape(atob(data.content)));
+                // Parse markdown
+                mBody.innerHTML = marked.parse(decodedContent);
+                })
+                .catch(err => {
+                mBody.innerHTML = '<p class="text-red-400">Could not load README. Check repository visibility or API limits.</p>';
+                });
+            }
+        }
+
+        function closeModal() {
+            if (backdrop) backdrop.classList.add('opacity-0');
+            if (content) content.classList.add('opacity-0', 'scale-95');
+            
+            setTimeout(() => {
+            if (modal) modal.classList.add('hidden');
+            }, 300);
+        }
+
+        // Attach Listeners
+        document.querySelectorAll('.project-card').forEach(el => {
+            // TypeScript needs to know 'el' is an HTMLElement to access .closest
+            const card = el as HTMLElement;
+            
+            card.addEventListener('click', (e) => {
+            e.preventDefault();
+            // Ensure we pass the element itself to the function
+            openModal(card);
+            });
         });
-      }
+
+        if (closeBtn) closeBtn.addEventListener('click', closeModal);
+        if (backdrop) backdrop.addEventListener('click', closeModal);
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal && !modal.classList.contains('hidden')) {
+            closeModal();
+            }
+        });
+
     </script>
+
+    <!-- THE MODAL OVERLAY (Hidden by default) -->
+    <div id="project-modal" class="fixed inset-0 z-50 hidden">
+    
+    <!-- 1. The Backdrop (Dark blur) -->
+    <div id="modal-backdrop" class="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity opacity-0"></div>
+
+    <!-- 2. The Content Box -->
+    <div class="absolute inset-0 flex items-center justify-center p-4">
+        <div id="modal-content" class="bg-gray-900 border border-white/10 w-full max-w-3xl max-h-[85vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col transform scale-95 opacity-0 transition-all duration-300">
+        
+        <!-- Header Image -->
+        <div class="h-48 w-full relative shrink-0">
+            <img id="modal-image" src="" class="w-full h-full object-cover" />
+            <div class="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent"></div>
+            <button id="close-modal" class="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 backdrop-blur-md transition">
+            ✕
+            </button>
+        </div>
+
+        <!-- Scrollable Body -->
+        <div class="p-8 overflow-y-auto custom-scrollbar">
+            <h2 id="modal-title" class="text-3xl font-bold text-white mb-2"></h2>
+            <div id="modal-tags" class="flex gap-2 mb-6"></div>
+            
+            <!-- The README container -->
+            <div id="modal-body" class="prose prose-invert prose-sm max-w-none text-gray-300">
+            <!-- Content injected here -->
+            <span class="animate-pulse">Loading GitHub Data...</span>
+            </div>
+        </div>
+
+        </div>
+    </div>
+    </div>
     
   </body>
 </html>

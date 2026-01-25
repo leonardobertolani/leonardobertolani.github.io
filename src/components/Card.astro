@@ -1,25 +1,41 @@
 ---
 // src/components/Card.astro
-// We define what data this card accepts
-const { title, colSpan = "col-span-1", rowSpan = "row-span-1", href, id } = Astro.props;
+const { 
+  title, 
+  colSpan = "col-span-1", 
+  rowSpan = "row-span-1", 
+  href, 
+  id, 
+  class: className,
+  ...attributes // <--- 1. CAPTURE ALL EXTRA PROPS (like data-repo)
+} = Astro.props;
 
-// We define the base style for the glass effect
-const glassStyle = "bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-6 transition hover:bg-white/15 hover:-translate-y-1";
+const baseStyle = "bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl transition hover:bg-white/15 hover:-translate-y-1 overflow-hidden";
 ---
 
-<!-- If there is an 'href' (link), we make it an <a> tag. If not, just a <div> -->
+<!-- 2. SPREAD {attributes} ONTO THE HTML TAGS -->
+
 {
   href ? (
-    <a id={id} href={href} class={`${glassStyle} ${colSpan} ${rowSpan} group block h-full`}>
+    <a 
+      id={id} 
+      href={href} 
+      class={`${baseStyle} ${colSpan} ${rowSpan} ${className ? className : 'p-6'} group block h-full relative`}
+      {...attributes} 
+    >
       <div class="h-full flex flex-col">
-        {title && <h2 class="text-sm uppercase tracking-widest text-gray-400 mb-2 font-bold">{title}</h2>}
+        {title && <h2 class="text-sm uppercase tracking-widest text-gray-400 mb-2 font-bold z-10">{title}</h2>}
         <slot />
       </div>
     </a>
   ) : (
-    <div id={id} class={`${glassStyle} ${colSpan} ${rowSpan} h-full`}>
+    <div 
+      id={id} 
+      class={`${baseStyle} ${colSpan} ${rowSpan} ${className ? className : 'p-6'} h-full relative cursor-pointer`}
+      {...attributes}
+    >
        <div class="h-full flex flex-col">
-        {title && <h2 class="text-sm uppercase tracking-widest text-gray-400 mb-2 font-bold">{title}</h2>}
+        {title && <h2 class="text-sm uppercase tracking-widest text-gray-400 mb-2 font-bold z-10">{title}</h2>}
         <slot />
       </div>
     </div>

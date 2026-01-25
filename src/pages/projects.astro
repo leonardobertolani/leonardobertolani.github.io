@@ -1,0 +1,108 @@
+---
+// src/pages/projects.astro
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Card from '../components/Card.astro';
+
+const projects = [
+  {
+    title: "temperatures",
+    description: "A simulation tool for heat diffusion modeling and visualization using numerical methods.",
+    repo: "leonardobertolani/temperatures",
+    tags: ["Python", "NumPy", "Simulation"],
+    link: "https://github.com/leonardobertolani/temperatures",
+    image: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb",
+    colSpan: "md:col-span-2",
+    rowSpan: "md:row-span-2"
+  },
+  {
+    title: "EcoTracker App",
+    description: "A mobile PWA to track carbon footprint using React and Firebase.",
+    repo: "leonardobertolani/ecotracker",
+    tags: ["React", "Firebase", "PWA"],
+    link: "https://github.com/leonardobertolani/ecotracker",
+    image: "https://images.unsplash.com/photo-1611273426858-450d8e3c9fce",
+    colSpan: "md:col-span-1",
+    rowSpan: "md:row-span-1"
+  },
+  {
+    title: "DataViz Dashboard",
+    description: "Real-time stock market visualization engine with interactive charts and analytics.",
+    repo: "leonardobertolani/dataviz",
+    tags: ["Python", "D3.js", "FastAPI"],
+    link: "https://github.com/leonardobertolani/dataviz",
+    image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71",
+    colSpan: "md:col-span-1",
+    rowSpan: "md:row-span-1"
+  },
+  {
+    title: "Portfolio Site",
+    description: "Personal portfolio built with Astro and modern web technologies.",
+    repo: "leonardobertolani/portfolio",
+    tags: ["Astro", "TailwindCSS", "TypeScript"],
+    link: "https://github.com/leonardobertolani/portfolio",
+    image: "https://images.unsplash.com/photo-1555066931-4365d14bab8c",
+    colSpan: "md:col-span-2",
+    rowSpan: "md:row-span-1"
+  },
+];
+---
+
+<BaseLayout pageTitle="Projects - Leonardo Bertolani">
+  <main class="w-full max-w-5xl">
+    
+    <!-- Navigation Card -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+      <Card colSpan="md:col-span-4" title="Projects" href="/">
+        <div class="flex items-center justify-between">
+          <p class="text-gray-300 text-sm">
+            A collection of my technical work and experiments
+          </p>
+          <div class="flex items-center gap-2 text-sm text-white/60">
+            <span class="text-xl">←</span>
+            <span>Back to home</span>
+          </div>
+        </div>
+      </Card>
+    </div>
+
+    <!-- Projects Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 auto-rows-[minmax(200px,auto)]">
+      {projects.map((project) => (
+        <Card 
+          colSpan={project.colSpan}
+          rowSpan={project.rowSpan}
+          href={project.link}
+          class="p-0 group"
+        >
+          <!-- Background Image -->
+          <img 
+            src={project.image} 
+            alt={project.title} 
+            class="absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:scale-110 opacity-80 group-hover:opacity-100"
+          />
+
+          <!-- Dark Gradient Overlay -->
+          <div class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent opacity-90"></div>
+
+          <!-- Content -->
+          <div class="relative z-10 flex flex-col justify-end h-full p-6">
+            <h3 class="text-2xl font-bold text-white mb-2">{project.title}</h3>
+            <p class="text-gray-300 text-sm mb-4 line-clamp-2">
+              {project.description}
+            </p>
+            
+            <!-- Tags -->
+            <div class="flex flex-wrap gap-2">
+              {project.tags.map((tag) => (
+                <span class="px-2 py-1 bg-white/20 backdrop-blur-sm border border-white/10 rounded-md text-xs text-white font-medium">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
+        </Card>
+      ))}
+
+
+  </main>
+</BaseLayout>

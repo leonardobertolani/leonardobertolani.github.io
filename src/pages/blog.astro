@@ -1,0 +1,95 @@
+---
+// src/pages/blog.astro
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Card from '../components/Card.astro';
+
+const posts = [
+  {
+    title: "Migrating to Astro: A Developer's Journey",
+    excerpt: "Why I chose Astro for my portfolio and what I learned along the way about modern web development.",
+    date: "2025-01-20",
+    readTime: "5 min read",
+    tags: ["Astro", "Web Development"],
+    slug: "migrating-to-astro",
+    colSpan: "md:col-span-2",
+    rowSpan: "md:row-span-1"
+  },
+  {
+    title: "Understanding Heat Diffusion Simulations",
+    excerpt: "Exploring the mathematics and implementation behind thermal modeling in computational physics.",
+    date: "2025-01-15",
+    readTime: "8 min read",
+    tags: ["Python", "Physics", "Simulation"],
+    slug: "heat-diffusion-simulations",
+    colSpan: "md:col-span-1",
+    rowSpan: "md:row-span-1"
+  },
+  {
+    title: "Building Responsive Bento Grids",
+    excerpt: "A deep dive into creating flexible, responsive layouts using CSS Grid and Tailwind.",
+    date: "2025-01-10",
+    readTime: "6 min read",
+    tags: ["CSS", "Design", "TailwindCSS"],
+    slug: "bento-grids",
+    colSpan: "md:col-span-1",
+    rowSpan: "md:row-span-1"
+  },
+];
+---
+
+<BaseLayout pageTitle="Blog - Leonardo Bertolani">
+  <main class="w-full max-w-5xl">
+    
+    <!-- Navigation Card -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+      <Card colSpan="md:col-span-3" title="Blog" href="/">
+        <div class="flex items-center justify-between">
+          <p class="text-gray-300 text-sm">
+            Thoughts on code, design, and continuous learning
+          </p>
+          <div class="flex items-center gap-2 text-sm text-white/60">
+            <span class="text-xl">←</span>
+            <span>Back to home</span>
+          </div>
+        </div>
+      </Card>
+    </div>
+
+    <!-- Blog Posts Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 auto-rows-[minmax(220px,auto)]">
+      {posts.map((post, index) => (
+        <Card 
+          colSpan={post.colSpan}
+          rowSpan={post.rowSpan}
+          href={`/blog/${post.slug}`}
+        >
+          <div class="flex flex-col justify-between h-full">
+            <div>
+              <div class="flex items-center gap-3 text-xs text-gray-400 mb-3">
+                <span>{new Date(post.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                <span>•</span>
+                <span>{post.readTime}</span>
+              </div>
+              
+              <h2 class={`font-bold text-white mb-3 group-hover:text-blue-300 transition ${index === 0 ? 'text-3xl' : 'text-xl'}`}>
+                {post.title}
+              </h2>
+              
+              <p class="text-gray-300 text-sm leading-relaxed line-clamp-3">
+                {post.excerpt}
+              </p>
+            </div>
+            
+            <div class="flex flex-wrap gap-2 mt-4">
+              {post.tags.map((tag) => (
+                <span class="px-2 py-1 bg-white/10 rounded-md text-xs text-gray-300">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
+        </Card>
+      ))}
+
+  </main>
+</BaseLayout>

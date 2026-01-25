@@ -1,75 +1,182 @@
 ---
 // src/pages/index.astro
-
-// 1. Import our construction parts
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Card from '../components/Card.astro';
 
-// 2. Define your basic info here (easy to change later)
 const name = "Leonardo Bertolani";
 const jobTitle = "Software Engineer";
 ---
 
-<!-- 3. Use the Layout wrapper -->
 <BaseLayout pageTitle={name}>
-
-  <!-- 4. The Grid Container -->
-  <!-- 'grid-cols-1 md:grid-cols-4' means: 1 column on phone, 4 columns on computer -->
   <main class="w-full max-w-5xl grid grid-cols-1 md:grid-cols-4 gap-4 auto-rows-[minmax(180px,auto)]">
 
-    <!-- BOX 1: Intro (Large 2x2) -->
+    <!-- BOX 1: Intro (Large 2x2) with integrated CV link -->
     <Card colSpan="md:col-span-2" rowSpan="md:row-span-2">
       <div class="flex flex-col justify-between h-full">
         <div class="flex flex-col gap-4">
-             <!-- You can replace this src with your actual github avatar url -->
-            <img src="https://github.com/github.png" alt="Avatar" class="w-20 h-20 rounded-full border-2 border-white/20" />
-            <div>
-                <h1 class="text-4xl font-extrabold text-white">{name}</h1>
-                <p class="text-gray-300 mt-2 text-lg">{jobTitle}</p>
-            </div>
+          <img src="https://github.com/leonardobertolani.png" alt="Avatar" class="w-20 h-20 rounded-full border-2 border-white/20" />
+          <div>
+            <h1 class="text-4xl font-extrabold text-white">{name}</h1>
+            <p class="text-gray-300 mt-2 text-lg">{jobTitle}</p>
+            <p class="text-gray-400 mt-4 text-sm leading-relaxed">
+              Building elegant solutions to complex problems. Passionate about clean code, 
+              innovative design, and continuous learning.
+            </p>
+          </div>
         </div>
-        <div class="flex gap-4 mt-6">
-            <!-- Social Buttons -->
-            <a href="https://github.com/leonardobertolani/" class="px-4 py-2 bg-white/5 rounded-full hover:bg-white/20 transition text-sm">GitHub</a>
-            <a href="https://www.linkedin.com/in/leonardo-bertolani-5727b3224" class="px-4 py-2 bg-white/5 rounded-full hover:bg-white/20 transition text-sm">LinkedIn</a>
+        <div class="flex flex-wrap gap-3 mt-6">
+          <a href="https://github.com/leonardobertolani/" class="px-4 py-2 bg-white/5 rounded-full hover:bg-white/20 transition text-sm">GitHub</a>
+          <a href="https://www.linkedin.com/in/leonardo-bertolani-5727b3224" class="px-4 py-2 bg-white/5 rounded-full hover:bg-white/20 transition text-sm">LinkedIn</a>
+          <a href="/resume.pdf" class="px-4 py-2 bg-white/5 rounded-full hover:bg-white/20 transition text-sm flex items-center gap-2">
+            <span>📄</span>
+            <span>CV</span>
+          </a>
         </div>
       </div>
     </Card>
 
-    <!-- BOX 2: Theme / Button (1x1) -->
-    <Card id="theme-btn" title="Mode" href="#">
+    <!-- BOX 2: Projects Portal (2x1) -->
+    <Card colSpan="md:col-span-2" title="Projects" href="/projects">
+      <div class="flex flex-col justify-between h-full">
+        <p class="text-gray-300 text-sm">
+          Explore my technical projects, experiments, and open-source contributions.
+        </p>
+        <div class="flex items-center gap-2 text-sm text-white/60 mt-4">
+          <span>View all projects</span>
+          <span class="text-xl">→</span>
+        </div>
+      </div>
+    </Card>
+
+    <!-- BOX 3: Theme Switcher (1x1) -->
+    <div id="theme-card" class="cursor-pointer">
+      <Card title="Theme">
         <div class="flex items-center justify-center h-full">
-            <span class="text-4xl">🎨</span>
+          <span class="text-4xl" id="theme-emoji">🎨</span>
         </div>
+      </Card>
+    </div>
+
+    <!-- BOX 4: Quick Contact (1x1) -->
+    <Card title="Contact" href="mailto:your.email@example.com">
+      <div class="flex items-center justify-center h-full">
+        <span class="text-4xl group-hover:rotate-12 transition-transform duration-500">✉️</span>
+      </div>
     </Card>
 
-    <!-- BOX 3: Resume (1x1) -->
-    <Card title="Curriculum" href="/resume.pdf">
-        <div class="flex items-center justify-center h-full group-hover:rotate-12 transition duration-500">
-            <span class="text-4xl">📄</span>
-        </div>
-    </Card>
-
-    <!-- BOX 4: Featured Project (2x1 wide) -->
+    <!-- BOX 5: Featured Project (2x1) -->
     <Card colSpan="md:col-span-2" title="Featured Project" href="https://github.com/leonardobertolani/temperatures">
-        <div class="mt-2">
-            <h3 class="text-2xl font-bold text-white">temperatures</h3>
-            <p class="text-gray-400 text-sm mt-1">
-                A simple simulation tool about heat diffusion.
-            </p>
-            <div class="flex gap-2 mt-4">
-                <span class="text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded">Python</span>
-            </div>
+      <div class="mt-2">
+        <h3 class="text-2xl font-bold text-white">temperatures</h3>
+        <p class="text-gray-400 text-sm mt-1">
+          A simulation tool for heat diffusion modeling and visualization.
+        </p>
+        <div class="flex gap-2 mt-4">
+          <span class="text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded">Python</span>
+          <span class="text-xs bg-green-500/20 text-green-300 px-2 py-1 rounded">Simulation</span>
         </div>
+      </div>
     </Card>
 
-    <!-- BOX 6: Blog / Writing (1x1) -->
+    <!-- BOX 6: Blog Portal (1x1) -->
     <Card title="Blog" href="/blog">
-        <div class="flex flex-col justify-center h-full">
-            <p class="text-lg font-bold">Latest Post</p>
-            <p class="text-xs text-gray-400">Migrating to Astro...</p>
+      <div class="flex flex-col justify-center h-full">
+        <p class="text-lg font-bold text-white">Latest Thoughts</p>
+        <p class="text-xs text-gray-400 mt-2">Writing about tech, learning, and creativity</p>
+      </div>
+    </Card>
+
+    <!-- BOX 7: About/Passions (1x1) -->
+    <Card title="About Me" href="/about">
+      <div class="flex flex-col justify-center h-full">
+        <p class="text-sm text-gray-300">Interests, skills, and what drives me</p>
+        <div class="flex gap-2 mt-3">
+          <span class="text-xl">🎸</span>
+          <span class="text-xl">📚</span>
+          <span class="text-xl">⚡</span>
         </div>
+      </div>
     </Card>
 
   </main>
 </BaseLayout>
+
+<script>
+  // Theme switcher that cycles through background images
+  const themes = [
+    { 
+      name: 'aurora', 
+      bg: '/backgrounds/aurora.jpg',
+      border: 'border-green-500/40',
+      text: 'text-green-300',
+      emoji: '🌌'
+    },
+    { 
+      name: 'jupyter', 
+      bg: '/backgrounds/jupyter.jpg',
+      border: 'border-orange-500/40',
+      text: 'text-orange-300',
+      emoji: '🪐'
+    },
+    { 
+      name: 'moon', 
+      bg: '/backgrounds/moon.jpg',
+      border: 'border-blue-500/40',
+      text: 'text-blue-300',
+      emoji: '🌙'
+    }
+  ];
+
+  let currentThemeIndex = 0;
+  const themeCard = document.getElementById('theme-card');
+  const themeEmoji = document.getElementById('theme-emoji');
+  const body = document.body;
+
+  // Load saved theme
+  const savedTheme = localStorage.getItem('backgroundTheme');
+  if (savedTheme) {
+    currentThemeIndex = themes.findIndex(t => t.name === savedTheme);
+    if (currentThemeIndex === -1) currentThemeIndex = 0;
+  }
+
+  function applyTheme(theme) {
+    // Set background image
+    body.style.backgroundImage = `url('${theme.bg}')`;
+    body.style.backgroundSize = 'cover';
+    body.style.backgroundPosition = 'center';
+    body.style.backgroundAttachment = 'fixed';
+    
+    // Update theme card styling
+    const cardElement = themeCard.querySelector('[class*="bg-white/10"]');
+    if (cardElement) {
+      // Remove old border classes
+      cardElement.className = cardElement.className.replace(/border-\w+-\d+\/\d+/g, '');
+      cardElement.classList.add(theme.border);
+    }
+    
+    // Update title color
+    const titleElement = themeCard.querySelector('h2');
+    if (titleElement) {
+      titleElement.className = titleElement.className.replace(/text-\w+-\d+/g, '');
+      titleElement.classList.add(theme.text);
+    }
+    
+    // Update emoji
+    if (themeEmoji) {
+      themeEmoji.textContent = theme.emoji;
+    }
+  }
+
+  // Apply initial theme
+  applyTheme(themes[currentThemeIndex]);
+
+  // Click handler to cycle through themes
+  themeCard.addEventListener('click', (e) => {
+    e.preventDefault();
+    currentThemeIndex = (currentThemeIndex + 1) % themes.length;
+    const newTheme = themes[currentThemeIndex];
+    
+    applyTheme(newTheme);
+    localStorage.setItem('backgroundTheme', newTheme.name);
+  });
+</script>
