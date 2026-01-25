@@ -1,0 +1,27 @@
+---
+// src/components/Card.astro
+// We define what data this card accepts
+const { title, colSpan = "col-span-1", rowSpan = "row-span-1", href, id } = Astro.props;
+
+// We define the base style for the glass effect
+const glassStyle = "bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-6 transition hover:bg-white/15 hover:-translate-y-1";
+---
+
+<!-- If there is an 'href' (link), we make it an <a> tag. If not, just a <div> -->
+{
+  href ? (
+    <a id={id} href={href} class={`${glassStyle} ${colSpan} ${rowSpan} group block h-full`}>
+      <div class="h-full flex flex-col">
+        {title && <h2 class="text-sm uppercase tracking-widest text-gray-400 mb-2 font-bold">{title}</h2>}
+        <slot />
+      </div>
+    </a>
+  ) : (
+    <div id={id} class={`${glassStyle} ${colSpan} ${rowSpan} h-full`}>
+       <div class="h-full flex flex-col">
+        {title && <h2 class="text-sm uppercase tracking-widest text-gray-400 mb-2 font-bold">{title}</h2>}
+        <slot />
+      </div>
+    </div>
+  )
+}

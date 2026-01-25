@@ -1,0 +1,70 @@
+---
+// src/layouts/BaseLayout.astro
+import '../styles/global.css'; 
+const { pageTitle } = Astro.props;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <title>{pageTitle}</title>
+    <style>
+       @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+       body { font-family: 'Inter', sans-serif; }
+       
+       /* Smooth transition for background image */
+       body {
+         transition: background-image 0.5s ease-in-out;
+       }
+    </style>
+  </head>
+  <!-- We remove the hardcoded background class here and rely on the script below -->
+  <body class="bg-gray-900 text-white min-h-screen flex justify-center items-center p-4 bg-cover bg-center bg-fixed">
+    
+    <slot />
+
+    <!-- CLIENT-SIDE SCRIPT -->
+    <script>
+      // TypeScript allows us to define the shape of our theme object
+      // This is optional, but helpful for autocomplete!
+      type Theme = {
+        bg: string;
+        name: string;
+      };
+
+      const themes: Theme[] = [
+        { bg: '/backgrounds/aurora.jpg', name: 'Aurora' },
+        { bg: '/backgrounds/jupyter.jpg', name: 'Jupyter' },
+        { bg: '/backgrounds/moon.jpg', name: 'Moon' }
+      ];
+
+      let currentThemeIndex = 0;
+      const body = document.body;
+      const btn = document.getElementById('theme-btn');
+
+      function applyTheme(index: number) {
+        const theme = themes[index];
+        if (body) {
+            body.style.backgroundImage = `url('${theme.bg}')`;
+        }
+        localStorage.setItem('userTheme', index.toString());
+      }
+
+      const savedTheme = localStorage.getItem('userTheme');
+      if (savedTheme) {
+        currentThemeIndex = parseInt(savedTheme);
+      }
+      applyTheme(currentThemeIndex);
+
+      if (btn) {
+        btn.addEventListener('click', () => {
+          currentThemeIndex = (currentThemeIndex + 1) % themes.length;
+          applyTheme(currentThemeIndex);
+        });
+      }
+    </script>
+    
+  </body>
+</html>

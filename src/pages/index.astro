@@ -1,17 +1,75 @@
 ---
+// src/pages/index.astro
 
+// 1. Import our construction parts
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Card from '../components/Card.astro';
+
+// 2. Define your basic info here (easy to change later)
+const name = "Leonardo Bertolani";
+const jobTitle = "Software Engineer";
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<!-- 3. Use the Layout wrapper -->
+<BaseLayout pageTitle={name}>
+
+  <!-- 4. The Grid Container -->
+  <!-- 'grid-cols-1 md:grid-cols-4' means: 1 column on phone, 4 columns on computer -->
+  <main class="w-full max-w-5xl grid grid-cols-1 md:grid-cols-4 gap-4 auto-rows-[minmax(180px,auto)]">
+
+    <!-- BOX 1: Intro (Large 2x2) -->
+    <Card colSpan="md:col-span-2" rowSpan="md:row-span-2">
+      <div class="flex flex-col justify-between h-full">
+        <div class="flex flex-col gap-4">
+             <!-- You can replace this src with your actual github avatar url -->
+            <img src="https://github.com/github.png" alt="Avatar" class="w-20 h-20 rounded-full border-2 border-white/20" />
+            <div>
+                <h1 class="text-4xl font-extrabold text-white">{name}</h1>
+                <p class="text-gray-300 mt-2 text-lg">{jobTitle}</p>
+            </div>
+        </div>
+        <div class="flex gap-4 mt-6">
+            <!-- Social Buttons -->
+            <a href="https://github.com/leonardobertolani/" class="px-4 py-2 bg-white/5 rounded-full hover:bg-white/20 transition text-sm">GitHub</a>
+            <a href="https://www.linkedin.com/in/leonardo-bertolani-5727b3224" class="px-4 py-2 bg-white/5 rounded-full hover:bg-white/20 transition text-sm">LinkedIn</a>
+        </div>
+      </div>
+    </Card>
+
+    <!-- BOX 2: Theme / Button (1x1) -->
+    <Card id="theme-btn" title="Mode" href="#">
+        <div class="flex items-center justify-center h-full">
+            <span class="text-4xl">🎨</span>
+        </div>
+    </Card>
+
+    <!-- BOX 3: Resume (1x1) -->
+    <Card title="Curriculum" href="/resume.pdf">
+        <div class="flex items-center justify-center h-full group-hover:rotate-12 transition duration-500">
+            <span class="text-4xl">📄</span>
+        </div>
+    </Card>
+
+    <!-- BOX 4: Featured Project (2x1 wide) -->
+    <Card colSpan="md:col-span-2" title="Featured Project" href="https://github.com/leonardobertolani/temperatures">
+        <div class="mt-2">
+            <h3 class="text-2xl font-bold text-white">temperatures</h3>
+            <p class="text-gray-400 text-sm mt-1">
+                A simple simulation tool about heat diffusion.
+            </p>
+            <div class="flex gap-2 mt-4">
+                <span class="text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded">Python</span>
+            </div>
+        </div>
+    </Card>
+
+    <!-- BOX 6: Blog / Writing (1x1) -->
+    <Card title="Blog" href="/blog">
+        <div class="flex flex-col justify-center h-full">
+            <p class="text-lg font-bold">Latest Post</p>
+            <p class="text-xs text-gray-400">Migrating to Astro...</p>
+        </div>
+    </Card>
+
+  </main>
+</BaseLayout>
