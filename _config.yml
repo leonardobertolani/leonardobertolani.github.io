@@ -1,0 +1,7 @@
+title: Leonardo Robertolani
+description: Minimal academic-style portfolio and blog
+baseurl: ""
+url: "https://leonardobertolani.github.io"
+markdown: kramdown
+plugins:
+  - jekyll-feed
