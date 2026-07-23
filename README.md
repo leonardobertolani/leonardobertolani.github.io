@@ -1,10 +1,12 @@
-# Leonardo Robertolani's website
+# Leonardo Bertolani's website
 
 A small Jekyll personal site designed for GitHub Pages.
 
 ## Editing the profile
 
 Update `_data/profile.yml` to change the name, biography, and social links. Replace `assets/profile-picture.svg` with a portrait when ready.
+
+To enable the CV download button, put your PDF at `assets/cv/Leonardo-Bertolani-CV.pdf`.
 
 ## Publishing a blog post
 

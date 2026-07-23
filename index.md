@@ -13,19 +13,26 @@ title: Home
     <p class="intro">{{ profile.intro }}</p>
     <ul class="social-links" aria-label="Social links">
       {% for link in profile.links %}
-        <li><a href="{{ link.url }}">{{ link.label }}</a></li>
+        <li>
+          <a href="{{ link.url }}" aria-label="{{ link.label }}">
+            <img src="{{ '/assets/icons/' | append: link.icon | append: '.svg' | relative_url }}" alt="" width="19" height="19">
+            <span>{{ link.label }}</span>
+          </a>
+        </li>
       {% endfor %}
     </ul>
   </div>
 </section>
 
-<section id="about" class="section" aria-labelledby="about-title">
+<section id="about" class="section section-about" aria-labelledby="about-title">
+  <div class="section-kicker"><span>01</span> A little about me</div>
   <h2 id="about-title">About</h2>
   <p>{{ profile.bio }}</p>
   <p>{{ profile.interests }}</p>
 </section>
 
 <section class="section recent-posts" aria-labelledby="writing-title">
+  <div class="section-kicker"><span>02</span> Selected notes</div>
   <div class="section-heading">
     <h2 id="writing-title">Recent writing</h2>
     <a href="{{ '/blog/' | relative_url }}">All posts <span aria-hidden="true">→</span></a>
@@ -44,4 +51,18 @@ title: Home
   {% else %}
     <p>No posts yet. Check back soon.</p>
   {% endif %}
+</section>
+
+<section class="section cv-section" aria-labelledby="cv-title">
+  <div class="section-kicker"><span>03</span> Background</div>
+  <div class="cv-card">
+    <div>
+      <p class="cv-overline">Curriculum vitae</p>
+      <h2 id="cv-title">A fuller account of my work.</h2>
+      <p>{{ profile.cv.summary }}</p>
+    </div>
+    <a class="button" href="{{ profile.cv.file | relative_url }}" download>
+      Download CV <span aria-hidden="true">↓</span>
+    </a>
+  </div>
 </section>

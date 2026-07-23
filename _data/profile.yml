@@ -1,4 +1,4 @@
-name: Leonardo Robertolani
+name: Leonardo Bertolani
 role: Researcher, engineer, and writer
 intro: I am interested in thoughtful technology, clear ideas, and careful communication.
 bio: >-
@@ -8,9 +8,16 @@ interests: Replace this short paragraph with your current role, background, rese
 links:
   - label: GitHub
     url: https://github.com/leonardobertolani
+    icon: github
   - label: LinkedIn
     url: https://www.linkedin.com/
+    icon: linkedin
   - label: Google Scholar
     url: https://scholar.google.com/
+    icon: scholar
   - label: Email
     url: mailto:you@example.com
+    icon: email
+cv:
+  summary: A concise overview of my experience, education, and work.
+  file: /assets/cv/Leonardo-Bertolani-CV.pdf
