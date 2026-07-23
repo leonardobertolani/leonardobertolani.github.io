@@ -3,29 +3,45 @@ layout: default
 title: Home
 ---
 
-# Leonardo Robertolani
+{% assign profile = site.data.profile %}
 
-Researcher, engineer, and writer interested in thoughtful technology, clear ideas, and careful communication.
+<section class="hero" aria-labelledby="page-title">
+  <img class="profile-photo" src="{{ '/assets/profile-picture.svg' | relative_url }}" alt="Portrait of {{ profile.name }}">
+  <div>
+    <p class="eyebrow">{{ profile.role }}</p>
+    <h1 id="page-title">{{ profile.name }}</h1>
+    <p class="intro">{{ profile.intro }}</p>
+    <ul class="social-links" aria-label="Social links">
+      {% for link in profile.links %}
+        <li><a href="{{ link.url }}">{{ link.label }}</a></li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
 
-![Leonardo Robertolani](assets/profile-picture.svg)
+<section id="about" class="section" aria-labelledby="about-title">
+  <h2 id="about-title">About</h2>
+  <p>{{ profile.bio }}</p>
+  <p>{{ profile.interests }}</p>
+</section>
 
-## Biography
+<section class="section recent-posts" aria-labelledby="writing-title">
+  <div class="section-heading">
+    <h2 id="writing-title">Recent writing</h2>
+    <a href="{{ '/blog/' | relative_url }}">All posts <span aria-hidden="true">→</span></a>
+  </div>
 
-I work at the intersection of research, software, and communication. This space is meant to share a concise overview of my work, links to my publications or projects, and occasional notes in a simple academic-style format.
-
-You can replace this paragraph with your own biography, academic background, current interests, and professional role.
-
-## Social links
-
-- [GitHub](https://github.com/leonardobertolani)
-- [LinkedIn](https://www.linkedin.com/)
-- [Google Scholar](https://scholar.google.com/)
-- [Email](mailto:you@example.com)
-
-## Recent posts
-
-{% for post in site.posts limit:3 %}
-- [{{ post.title }}]({{ post.url }}) — {{ post.date | date: "%B %-d, %Y" }}
-{% endfor %}
-
-[Read the full blog](/blog/)
+  {% if site.posts.size > 0 %}
+    <ul class="post-list">
+      {% for post in site.posts limit:3 %}
+        <li>
+          <p class="post-date">{{ post.date | date: "%b %-d, %Y" }}</p>
+          <h3><a href="{{ post.url | relative_url }}">{{ post.title }}</a></h3>
+          {% if post.description %}<p>{{ post.description }}</p>{% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No posts yet. Check back soon.</p>
+  {% endif %}
+</section>

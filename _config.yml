@@ -1,7 +1,14 @@
 title: Leonardo Robertolani
-description: Minimal academic-style portfolio and blog
+description: Researcher, engineer, and writer.
 baseurl: ""
 url: "https://leonardobertolani.github.io"
 markdown: kramdown
 plugins:
   - jekyll-feed
+
+defaults:
+  - scope:
+      path: ""
+      type: posts
+    values:
+      layout: post
