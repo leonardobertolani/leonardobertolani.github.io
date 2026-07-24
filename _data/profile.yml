@@ -1,22 +1,20 @@
 name: Leonardo Bertolani
-role: Researcher, engineer, and writer
-intro: I am interested in thoughtful technology, clear ideas, and careful communication.
+role: Data Scientist, Software Engineer, and Tech Enthusiast
+intro: Engineering student with a passion for Data Science, Artificial Intelligence, and Space Engineering.
 bio: >-
-  I work at the intersection of research, software, and communication. This site is
-  a home for my work, notes, and the ideas I am still working through.
-interests: Replace this short paragraph with your current role, background, research interests, or the kinds of problems you enjoy working on.
+  Ciao! My name is Leonardo. I am a Double Degree student in Computer Science and Engineering at Politecnico di Milano and
+  The University of Queensland, currently specializing in Data Science and Artificial Intelligence.
+
+interests: On this website I'll be talking about my projects and thoughts, mainly regarding Deep Learning, Space Engineering, and Physics, my major interests. Have a look at my blog to read more about them.
 links:
   - label: GitHub
     url: https://github.com/leonardobertolani
     icon: github
   - label: LinkedIn
-    url: https://www.linkedin.com/
+    url: https://www.linkedin.com/in/leonardo-bertolani-5727b3224/
     icon: linkedin
-  - label: Google Scholar
-    url: https://scholar.google.com/
-    icon: scholar
   - label: Email
-    url: mailto:you@example.com
+    url: mailto:leonardobertolani10@gmail.com
     icon: email
 cv:
   summary: A concise overview of my experience, education, and work.
