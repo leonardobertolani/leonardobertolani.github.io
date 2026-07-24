@@ -1,18 +1,16 @@
 ---
 title: On Heat Diffusion Equations
-description: A brief study about the diffusion of heat in physical bodies.
+description: A brief study on the diffusion of heat in physical bodies.
 tags: [research, physics]
 ---
 
-# Temperatures
-
-With this repo I'd like to show you some of my (very simple) results about my study of thermodynamics. In particular, I analitically studied the way temperature of objects change over time, and I built some basic GUI interfaces with python to plot the results I found. The problems I analyzed go for a crescent way of difficulty, and the repo ends with a general solution I came up with that comprehend all the possible situations. Hope it could be interesting :)
+In this post I'd like to show some results I obtained from my heat diffusion brief study. In particular, starting from basic thermodynamical laws and some simple assumption about the physical bodies involved, I've shown how to construct a method to numerically determine the evolution of the bodies temperature over time, when these are linked together and they exchange heat one with the other. Then, I've implemented this method using different algorithm with different parallelisation levels, and I've compared their performance. In the final part of this post, I've also shown how the numerical formulation I've found can be used to derive the heat diffusion differential equation for a generic body. Hope it could be interesting :)
 
 ## Table of Contents
 - [Tackling the problem](#tackling-the-problem)
-  - [First problem: single object and the environment](#first-problem-single-object-and-the-environment)
-  - [Second problem: two objects without environment](#second-problem-two-objects-without-environment)
-  - [Third problem: two objects and the environment](#third-problem-two-objects-and-the-environment)
+  - [First problem: single body and the environment](#first-problem-single-body-and-the-environment)
+  - [Second problem: two bodies in adiabatic environment](#second-problem-two-bodies-in-adiabatic-environment)
+  - [Third problem: two bodies and the environment](#third-problem-two-bodies-and-the-environment)
   - [A more general way](#a-more-general-way)
 - [Optimizing the numerical solution](#optimizing-the-numerical-solution)
   - [First attempt: plain python](#first-attempt-plain-python)
@@ -34,18 +32,18 @@ we will find a way to generalise the calculation and find any solution numerical
 
 
 
-## First problem: single object and the environment
+## First problem: single body and the environment
 
-Let's consider an object of mass $m$, temperature $T_{init}$ and specific heat $c$ surrounded by an environment with a steady temperature $T_{env}$ and with a thermal resistance $R$ between them. 
-From this, we would like to find the temperature function $T(t)$ of the object as time passes, that is, find the rate of change in temperature over time. Actually, it's exponential.
+Let's consider an body of mass $m$, temperature $T_{init}$ and specific heat $c$ surrounded by an environment with a steady temperature $T_{env}$ and with a thermal resistance $R$ between them. 
+From this, we would like to find the temperature function $T(t)$ of the body as time passes, that is, find the rate of change in temperature over time. Actually, it's exponential.
 
-To find it, let us consider a system with the properties we provided. It doesn't matter if the object is cooler or hotter than the environment, physics works both ways :)
+To find it, let us consider a system with the properties we provided. It doesn't matter if the body is cooler or hotter than the environment, physics works both ways :)
 
 <p align="center">
   <img width="596" alt="image" src="https://github.com/leonardobertolani/temperatures/assets/102794282/df7a909f-f8de-4c36-b26b-96dd548bf111"/>
 </p>
 
-Given that, let us quantify the total heat transfered by the object or to the object in a very small period of time $dt$:
+Given that, let us quantify the total heat transfered by the body or to the body in a very small period of time $dt$:
 
 $$Q_{total} = m \cdot c \cdot (T(t + dt) - T(t))$$
 
@@ -53,12 +51,12 @@ Now, we can think of the total heat exchanged as the total heat power released i
 
 $$Q_{total} = \dot{Q}_{total} \cdot dt = m \cdot c \cdot (T(t + dt) - T(t))$$
 
-Then, from the electro-thermal analogy we can express the heat power using the temperature of the environment $T_{env}$, the temperature of the object at that time $T(t)$, and the thermal resistance $R$ facing between them:
+Then, from the electro-thermal analogy we can express the heat power using the temperature of the environment $T_{env}$, the temperature of the body at that time $T(t)$, and the thermal resistance $R$ facing between them:
 
 $$-\frac{T(t) - T_{env}}{R} \cdot dt = m \cdot c \cdot (T(t + dt) - T(t))$$
 
-The - sign is fundamental to maintain the equivalence (for example, suppose the object is cooling: in that case $T(t) - T_{env} > 0$ but $T(t + dt) - T(t) < 0$ and so the - is fundamental to balance the equation.
-If the object is warming it goes the other way round).
+The - sign is fundamental to maintain the equivalence (for example, suppose the body is cooling: in that case $T(t) - T_{env} > 0$ but $T(t + dt) - T(t) < 0$ and so the - is fundamental to balance the equation.
+If the body is warming it goes the other way round).
 
 Finally, we can divide both terms by $dt$: the $dt$ in the left term cancels out, while in the right term we recognize the derivative of function $T(t)$:
 
@@ -74,7 +72,7 @@ $$T(t) = (T_{init} - T_{env})e^{-\frac{1}{R \cdot m \cdot c}t} + T_{env}$$
 
 This function goes to $T_{env}$ when time goes to infinity, and equals $T_{init}$ at the starting point $T(0)$. It seems to work fine! 
 
-Starting from this analytical solution I wrote the `basic-scenarios/object_environment.py` python script, that through a simple GUI reads the properties of the system and then plots the curve of the function.
+Starting from this analytical solution I wrote the `basic-scenarios/body_environment.py` python script, that through a simple GUI reads the properties of the system and then plots the curve of the function.
 
 
 
@@ -83,9 +81,9 @@ Starting from this analytical solution I wrote the `basic-scenarios/object_envir
 
 
 
-## Second problem: two objects without environment
+## Second problem: two bodies in adiabatic environment
 
-Let's consider two objects of mass $m1$ and $m2$, temperature $T^1_{init}$ and $T^2_{init}$, and specific heat $c_1$ and $c_2$, surrounded by an adiabatic environment (no environment transfer of heat happens) and with a thermal resistence $R$ between the two objects. We would like to discover the rate of change in temperature of the two objects.
+Let's consider two bodies of mass $m1$ and $m2$, temperature $T_{1, init}$ and $T_{2, init}$, and specific heat $c_1$ and $c_2$, surrounded by an adiabatic environment (no environment transfer of heat happens) and with a thermal resistence $R$ between the two bodies. We would like to discover the rate of change in temperature of the two bodies.
 
 <p align="center">
 <img width="596" alt="image" src="https://github.com/leonardobertolani/temperatures/assets/102794282/bd9a5a47-122d-4e2f-9ba3-1ee9ee8c923a">
@@ -93,24 +91,24 @@ Let's consider two objects of mass $m1$ and $m2$, temperature $T^1_{init}$ and $
 
 ### The equivalence temperature
 
-First of all, it can be usefull to find the equivalence temperature $T_{eq}$, that is the temperature that the two objects will reach at equilibrium, once all the heat will have been transfered. From this point of view, the equivalence temperature can be found by comparing the total heat exchanges of the two objects untill they reach that temperature:
+First of all, it can be usefull to find the equivalence temperature $T_{eq}$, that is the temperature that the two bodies will reach at equilibrium, once all the heat will have been transfered. From this point of view, the equivalence temperature can be found by comparing the total heat exchanges of the two bodies untill they reach that temperature:
 
 $$
-  Q_{12} = - Q_{21} \implies m_1 \cdot c_1 \cdot (T^1_{init} -  T_{eq}) = - m_2 \cdot c_2 \cdot (T^2_{init} -  T_{eq})
+  Q_{12} = - Q_{21} \implies m_1 \cdot c_1 \cdot (T_{1, init} -  T_{eq}) = - m_2 \cdot c_2 \cdot (T_{2, init} -  T_{eq})
 $$
 
 From here we have
 
 $$
-  T_{eq} = \frac{m_1 \cdot c_1 \cdot T^1_{init} + m_2 \cdot c_2 \cdot T^2_{init}}{m_1 \cdot c_1 + m_2 \cdot c_2}
+  T_{eq} = \frac{m_1 \cdot c_1 \cdot T_{1, init} + m_2 \cdot c_2 \cdot T_{2, init}}{m_1 \cdot c_1 + m_2 \cdot c_2}
 $$
 
-As we can see, the equivalence temperature seems to be the weighted average of the initial objects temperatures, with the weights expressed by the product $m \cdot c$.
+As we can see, the equivalence temperature seems to be the weighted average of the initial bodies temperatures, with the weights expressed by the product $m \cdot c$.
 
 
 ### The relation between temperature curves
 
-Now let's understand what happens to our system after a really short period of time $dt$. The amount of heat that the two objects will have been transfered equals to
+Now let's understand what happens to our system after a really short period of time $dt$. The amount of heat that the two bodies will have been transfered equals to
 
 $$
   Q_{tot} = m_1 \cdot c_1 \cdot (T_1(t + dt) - T_1(t)) = - m_2 \cdot c_2 \cdot (T_2(t + dt) - T_2(t))
@@ -132,7 +130,7 @@ $$
   T_1(t) = - \frac{m_2 \cdot c_2}{m_1 \cdot c_1} \cdot T_2(t) + c
 $$
 
-This final result shows that $T_1(t)$ and $T_2(t)$ are pretty much the same function, except for a coefficient and a constant term. This result is reasonable, because the heat exchanged by the objects over time is the same, so the way one temperature function increases should match the way the other temperature function decreases. The constant term $c$ can be found remembering that for time going to infinity bot functions equals $T_{eq}$, and so:
+This final result shows that $T_1(t)$ and $T_2(t)$ are pretty much the same function, except for a coefficient and a constant term. This result is reasonable, because the heat exchanged by the bodies over time is the same, so the way one temperature function increases should match the way the other temperature function decreases. The constant term $c$ can be found remembering that for time going to infinity bot functions equals $T_{eq}$, and so:
 
 $$
   T_{eq} = - \frac{m_2 \cdot c_2}{m_1 \cdot c_1} \cdot T_{eq} + c \qquad t \to\infty
@@ -143,28 +141,28 @@ $$
 $$
 
 $$
-  c = \frac{m_1 \cdot c_1 \cdot T^1_{init} + m_2 \cdot c_2 \cdot T^2_{init}}{m_1 \cdot c_1 + m_2 \cdot c_2} \cdot (\frac{m_1 \cdot c_1 + m_2 \cdot c_2}{m_1 \cdot c_1})
+  c = \frac{m_1 \cdot c_1 \cdot T_{1, init} + m_2 \cdot c_2 \cdot T_{2, init}}{m_1 \cdot c_1 + m_2 \cdot c_2} \cdot (\frac{m_1 \cdot c_1 + m_2 \cdot c_2}{m_1 \cdot c_1})
 $$
 
 $$
-  c = \frac{m_1 \cdot c_1 \cdot T^1_{init} + m_2 \cdot c_2 \cdot T^2_{init}}{m_1 \cdot c_1} = T^1_{init} + \frac{m_2 \cdot c_2}{m_1 \cdot c_1} \cdot T^2_{init}
+  c = \frac{m_1 \cdot c_1 \cdot T_{1, init} + m_2 \cdot c_2 \cdot T_{2, init}}{m_1 \cdot c_1} = T_{1, init} + \frac{m_2 \cdot c_2}{m_1 \cdot c_1} \cdot T_{2, init}
 $$
 
 The equation can eventually be written as:
 
 $$
-  T_1(t) = - \frac{m_2 \cdot c_2}{m_1 \cdot c_1} \cdot T_2(t) + c = - \frac{m_2 \cdot c_2}{m_1 \cdot c_1} \cdot T_2(t) + T^1_{init} + \frac{m_2 \cdot c_2}{m_1 \cdot c_1} \cdot T^2_{init}
+  T_1(t) = - \frac{m_2 \cdot c_2}{m_1 \cdot c_1} \cdot T_2(t) + c = - \frac{m_2 \cdot c_2}{m_1 \cdot c_1} \cdot T_2(t) + T_{1, init} + \frac{m_2 \cdot c_2}{m_1 \cdot c_1} \cdot T_{2, init}
 $$
 
 and, of course
 
 $$
-T_2(t) = - \frac{m_1 \cdot c_1}{m_2 \cdot c_2} \cdot (T_1(t) - c) = - \frac{m_1 \cdot c_1}{m_2 \cdot c_2} \cdot (T_1(t) - T^1_{init} - \frac{m_2 \cdot c_2}{m_1 \cdot c_1} \cdot T^2_{init})
+T_2(t) = - \frac{m_1 \cdot c_1}{m_2 \cdot c_2} \cdot (T_1(t) - c) = - \frac{m_1 \cdot c_1}{m_2 \cdot c_2} \cdot (T_1(t) - T_{1, init} - \frac{m_2 \cdot c_2}{m_1 \cdot c_1} \cdot T_{2, init})
 $$
 
 
 ### The differential equation
-Finally, let's rewrite the previous equation using the electro-thermal analogy: the amount of heat transfered in a $dt$ interval can be expressed also by the difference in temperature at time $t$ between the object and by the thermal resistence $R$. 
+Finally, let's rewrite the previous equation using the electro-thermal analogy: the amount of heat transfered in a $dt$ interval can be expressed also by the difference in temperature at time $t$ between the body and by the thermal resistence $R$. 
 
 $$
 Q_{tot} = m_1 \cdot c_1 \cdot (T_1(t + dt) - T_1(t)) = - m_2 \cdot c_2 \cdot (T_2(t + dt) - T_2(t)) = - \frac{T_1(t) - T_2(t)}{R} \cdot dt
@@ -204,17 +202,17 @@ $$
   T_1(t) = e^{-\gamma t} (c_1 + \frac{c}{m_2 \cdot c_2 \cdot R} \cdot \frac{1}{\gamma} \cdot e^{\gamma t}) =  c_1 \cdot e^{-\gamma t} + \frac{c}{m_2 \cdot c_2 \cdot R \cdot \gamma} = c_1 \cdot e^{-\gamma t} + T_{eq}
 $$
 
-Note that the the term $\frac{c}{m_2 \cdot c_2 \cdot R \cdot \gamma}$ perfectly equals the $T_{eq}$ term that we calculated before. This is obvious: with $t$ going to infinity we expect the temperature of the system approaching $T_{eq}$, and this is what happens in the formula. The last costant $c_1$ can be found remembering that $T_1(0) = T^1_{init}$, leading to these final functions:
+Note that the the term $\frac{c}{m_2 \cdot c_2 \cdot R \cdot \gamma}$ perfectly equals the $T_{eq}$ term that we calculated before. This is obvious: with $t$ going to infinity we expect the temperature of the system approaching $T_{eq}$, and this is what happens in the formula. The last costant $c_1$ can be found remembering that $T_1(0) = T_{1, init}$, leading to these final functions:
 
 $$
-  T_1(t) = (T^1_{init} - T_{eq}) \cdot e^{-\gamma t} + T_{eq}
+  T_1(t) = (T_{1, init} - T_{eq}) \cdot e^{-\gamma t} + T_{eq}
 $$
 
 $$
-  T_2(t) = (T^2_{init} - T_{eq}) \cdot e^{-\gamma t} + T_{eq}
+  T_2(t) = (T_{2, init} - T_{eq}) \cdot e^{-\gamma t} + T_{eq}
 $$
 
-These results have been applied in the `simple-scenarios/object_object.py` script. A simple GUI wraps the graphs and add some input-boxes to let you play around.
+These results have been applied in the `simple-scenarios/body_body.py` script. A simple GUI wraps the graphs and add some input-boxes to let you play around.
 
 
 
@@ -223,9 +221,9 @@ These results have been applied in the `simple-scenarios/object_object.py` scrip
 
 
 
-## Third problem: two objects and the environment
+## Third problem: two bodies and the environment
 
-For the third problem, let's consider two objects of mass $m1$ and $m2$, temperature $T^1_{init}$ $T^2_{init}$ and specific heat $c_1$ and $c_2$, surrounded by an environment with a steady temperature $T_{env}$. The thermal resistance between the two objects is $R_{12}$, between the first object and the environment is $R_{1-env}$ and between the second object and the environment is $R_{2-env}$.
+For the third problem, let's consider two bodies of mass $m1$ and $m2$, temperature $T_{1, init}$ $T_{2, init}$ and specific heat $c_1$ and $c_2$, surrounded by an environment with a steady temperature $T_{env}$. The thermal resistance between the two bodies is $R_{12}$, between the first body and the environment is $R_{1-env}$ and between the second body and the environment is $R_{2-env}$.
 
 
 <p align="center">
@@ -233,7 +231,7 @@ For the third problem, let's consider two objects of mass $m1$ and $m2$, tempera
 </p>
 
 
-From here, it's very difficult to find an analytical solution for the temperature curves of the objects, since the system is too complicated. Anyway, we can opt for an iterative solution! Like before, let us describe the total heat exchanged by the first object in a small period of time $dt$:
+From here, it's very difficult to find an analytical solution for the temperature curves of the bodies, since the system is too complicated. Anyway, we can opt for an iterative solution! Like before, let us describe the total heat exchanged by the first body in a small period of time $dt$:
 
 $$
 Q_{total} = m_1 \cdot c_1 \cdot (T_1(t + dt) - T_1(t))
@@ -245,7 +243,7 @@ $$
 Q_{total} = \dot{Q}_{total} \cdot dt = m_1 \cdot c_1 \cdot (T_1(t + dt) - T_1(t))
 $$
 
-Now, the heat power that is being exchanged during the $dt$ interval is the sum of the heat power transfered from oject 1 through di environment and the heat power transfered from object 1 through object 2. 
+Now, the heat power that is being exchanged during the $dt$ interval is the sum of the heat power transfered from oject 1 through di environment and the heat power transfered from body 1 through body 2. 
 Thus, by using the electro-thermal analogy we conclude that:
 
 $$
@@ -254,17 +252,17 @@ $$
 
 The - sign is fundamental to maintain the equivalence (for example, suppose $T_1(t) > T_2(t) > T_{env}$: in that case $T_1(t) - T_2(t) > 0$ and $T_1(t) - T_{env} > 0$ but $T_1(t + dt) - T_1(t) < 0$ and so the - is fundamental so balance the equation).
 
-From this equation we notice that we can derive the temperature of the object at time $t + dt$ given the state of the system at time $t$, in fact:
+From this equation we notice that we can derive the temperature of the body at time $t + dt$ given the state of the system at time $t$, in fact:
 
 $$T_1(t + dt) = T_1(t) - (\frac{T_1(t) - T_2(t)}{R_{12} \cdot m_1 \cdot c_1} + \frac{T_1(t) - T_{env}}{R_{1-env} \cdot m_1 \cdot c_1}) \cdot dt$$
 
 For example, after the first $dt$ interval the temperature would become:
 
 $$
-T_1(0 + dt) = T_1(dt)= T_1(0) - (\frac{T_1(0) - T_2(0)}{R_{12} \cdot m_1 \cdot c_1} + \frac{T_1(0) - T_{env}}{R_{1-env} \cdot m_1 \cdot c_1}) \cdot dt = T^1_{init} - (\frac{T^1_{init} - T^2_{init}}{R_{12} \cdot m_1 \cdot c_1} + \frac{T^1_{init} - T_{env}}{R_{1-env} \cdot m_1 \cdot c_1}) \cdot dt
+T_1(0 + dt) = T_1(dt)= T_1(0) - (\frac{T_1(0) - T_2(0)}{R_{12} \cdot m_1 \cdot c_1} + \frac{T_1(0) - T_{env}}{R_{1-env} \cdot m_1 \cdot c_1}) \cdot dt = T_{1, init} - (\frac{T_{1, init} - T_{2, init}}{R_{12} \cdot m_1 \cdot c_1} + \frac{T_{1, init} - T_{env}}{R_{1-env} \cdot m_1 \cdot c_1}) \cdot dt
 $$
 
-We can see that by iterating this formula over and over again and by storing each time the values computed we are able to build the temperature curve of the object. Obviously, all the temperatures of the system must be updated over time, so to be able to build the $T_1(t)$ temperature curve is necessary to build the $T_2(t)$ temperature curve at the same time. This idea is applied in the `simple-scenario/object_object_environment.py` script, and seems to work pretty well.
+We can see that by iterating this formula over and over again and by storing each time the values computed we are able to build the temperature curve of the body. Obviously, all the temperatures of the system must be updated over time, so to be able to build the $T_1(t)$ temperature curve is necessary to build the $T_2(t)$ temperature curve at the same time. This idea is applied in the `simple-scenario/body_body_environment.py` script, and seems to work pretty well.
 
 
 
@@ -275,27 +273,27 @@ We can see that by iterating this formula over and over again and by storing eac
 
 
 ## A more general way
-As seen in the previous paragraph about the `simple-scenario/object_object_environment.py` script, it is not always necessary to compute a differential equation to plot the graph of different objects in the system. By using the iterative approach, the only difficulty is writing the first equation correctly and then plugging it into a script that builds a function step by step. 
+As seen in the previous paragraph about the `simple-scenario/body_body_environment.py` script, it is not always necessary to compute a differential equation to plot the graph of different bodies in the system. By using the iterative approach, the only difficulty is writing the first equation correctly and then plugging it into a script that builds a function step by step. 
 
-For example, suppose we have $N$ objects with different masses, specific heats, and temperatures, all linked together, surrounded by the same environment. The temperature equation for, let's say, object 1 would simply be:
+For example, suppose we have $N$ bodies with different masses, specific heats, and temperatures, all linked together, surrounded by the same environment. The temperature equation for, let's say, body 1 would simply be:
 
 $$
 -(\frac{T_1(t) - T_2(t)}{R_{12}} + \frac{T_1(t) - T_3(t)}{R_{13}} + \ldots + \frac{T_1(t) - T_N(t)}{R_{1N}} + \frac{T_1(t) - T_{env}}{R_{1-env}}) \cdot dt = m_1 \cdot c_1 \cdot (T_1(t + dt) - T_1(t))
 $$
 
-So, the temperature of object 1 at time $t + dt$ can be determined by the state of the system at time $t$ as:
+So, the temperature of body 1 at time $t + dt$ can be determined by the state of the system at time $t$ as:
 
 $$
 T_1(t + dt) = T_1(t) - (\frac{T_1(t) - T_2(t)}{R_{12} \cdot m_1 \cdot c_1} + \frac{T_1(t) - T_3(t)}{R_{13} \cdot m_1 \cdot c_1} + \ldots + \frac{T_1(t) - T_N(t)}{R_{1N} \cdot m_1 \cdot c_1} + \frac{T_1(t) - T_{env}}{R_{1-env} \cdot m_1 \cdot c_1}) \cdot dt
 $$
 
-Not every object should exchange heat with all others. For instance, object 1 may directly exchange heat with objects 2 and 4 but not with objects 3 and 5. We can represent these objects and their thermal interactions through a weighted graph, where each node symbolizes an object and each edge represents a connection between two objects, with the weight indicating thermal resistances.
+Not every body should exchange heat with all others. For instance, body 1 may directly exchange heat with bodies 2 and 4 but not with bodies 3 and 5. We can represent these bodies and their thermal interactions through a weighted graph, where each node symbolizes an body and each edge represents a connection between two bodies, with the weight indicating thermal resistances.
 
 <p align="center">
 <img width="595" alt="image" src="https://github.com/leonardobertolani/temperatures/assets/102794282/9807af79-4f09-44a8-87e2-ac215c8cedfc">
 </p>
 
-Under this point of view, the temperature at time $t + dt$ of a generic object $i \in N$ with mass $m_i$ and specific heat $c_i$, connected to a set $J \subset N$ of objects ${1, ..., j}$ and to an environment via thermal resistances
+Under this point of view, the temperature at time $t + dt$ of a generic body $i \in N$ with mass $m_i$ and specific heat $c_i$, connected to a set $J \subset N$ of bodies ${1, ..., j}$ and to an environment via thermal resistances
 $R_{ij}$ and $R_{i-env}$, can be calculated as
 
 $$
@@ -307,8 +305,8 @@ at time $t$ to determine the future situation after a very short time instant $d
 
 This result is also known in numerical analysis as **Forward Euler Method**, and it is the most basic method for numerically solve a complex differential equation.
 
-From here, we easily realise that the computation to be performed at each layer is nothing more than a scalar product between the vector of temperatures of the objects at instant $t$ and the vector of thermal resistances of 
-that object with respect to all the others. This is also the reason why the Forward Euler Method is called **explicit** method, because it only needs the knowledge of the system at a certain instant of time $t$ to determine its future evolution.
+From here, we easily realise that the computation to be performed at each layer is nothing more than a scalar product between the vector of temperatures of the bodies at instant $t$ and the vector of thermal resistances of 
+that body with respect to all the others. This is also the reason why the Forward Euler Method is called **explicit** method, because it only needs the knowledge of the system at a certain instant of time $t$ to determine its future evolution.
 Indeed, we observe that
 
 $$
@@ -323,8 +321,8 @@ $$
 T_i(t + dt) = T_i(t) - \frac{dt}{m_i \cdot c_i} ( \ \sum_{j=1}^{N}\frac{1}{R_{ij}} \cdot (T_i(t) - T_j(t)) + \frac{T_i(t) - T_{env}}{R_{i-env}} \ )
 $$
 
-The summation we have extracted represents a scalar product between the **vector of the normalised temperatures with respect to object $i$** and the **vector
-of the inverse of the thermal resistances with respect to object $i$**. Furthermore, we realise that the heat contribution given by the environment has the same mathematical structure as the other objects, therefore we can treat the environment as an object to all intents and purposes and include it in the summation, but remembering that its temperature must remain constant,
+The summation we have extracted represents a scalar product between the **vector of the normalised temperatures with respect to body $i$** and the **vector
+of the inverse of the thermal resistances with respect to body $i$**. Furthermore, we realise that the heat contribution given by the environment has the same mathematical structure as the other bodies, therefore we can treat the environment as an body to all intents and purposes and include it in the summation, but remembering that its temperature must remain constant,
 and thus imposing that $m_{env} = \infty$ and $c_{env} = \infty$.
 
 $$
@@ -344,9 +342,9 @@ $$
 Now that we have established a general criterion for studying the free evolution
 of the system over time, let us try different algorithmic approaches to improve it.
 
-As we can see, determining the temperature of a given object at the next instant of time requires us to compute $o(N)$ multiplications, while the evolution of the whole system requires us to compute $o(N^2 \cdot D)$ iterations, where N is the cardinality of the set of objects and D is the total number of infinitesimal intervals of time that make up our simulation. This algorithm scales quadratically with the number of objects, and linearly with the duration of the simulation: generally speaking, the Forward Euler approach doesn't seem to scale well, and it is also known for its simplicity and instability.
+As we can see, determining the temperature of a given body at the next instant of time requires us to compute $o(N)$ multiplications, while the evolution of the whole system requires us to compute $o(N^2 \cdot D)$ iterations, where N is the cardinality of the set of bodies and D is the total number of infinitesimal intervals of time that make up our simulation. This algorithm scales quadratically with the number of bodies, and linearly with the duration of the simulation: generally speaking, the Forward Euler approach doesn't seem to scale well, and it is also known for its simplicity and instability.
 
-From the algorithmic point of view there's nothing we can do: the algorithm we derived requires the update of the whole set of objects at each instant of time, and this property seems to belong strictly to its mathematical structure, we cannot simplify this.
+From the algorithmic point of view there's nothing we can do: the algorithm we derived requires the update of the whole set of bodies at each instant of time, and this property seems to belong strictly to its mathematical structure, we cannot simplify this.
 
 However, before giving up with the optimization, let's give parallel computation a try, and let's see how much modern computers are able to deal with this kind of complexity. To do this, we will look at three different algorithmic approaches, designed in different parallelization levels: a pure python implementation, a numpy implementation, and a full vectorized implementation.
 
@@ -370,9 +368,9 @@ def plain_algorithm(T_vector, R_matrix, m_vector, c_vector, environment=True):
     for _ in range(int(DURATION / DT) - 1):
         new_T_vector = []
     
-        for j in range(OBJECT_NUMBER):
-            R_dot = [1 / R_matrix[j][n] for n in range(OBJECT_NUMBER)]
-            T_dot = [current_T_vector[j] - current_T_vector[n] for n in range(OBJECT_NUMBER)]
+        for j in range(body_NUMBER):
+            R_dot = [1 / R_matrix[j][n] for n in range(body_NUMBER)]
+            T_dot = [current_T_vector[j] - current_T_vector[n] for n in range(body_NUMBER)]
             delta_T = DT / (m_vector[j] * c_vector[j]) * dot_product(R_dot, T_dot)
             new_T_vector.append(current_T_vector[j] - delta_T)
         
@@ -383,7 +381,7 @@ def plain_algorithm(T_vector, R_matrix, m_vector, c_vector, environment=True):
 ```
 The `plain_algorithm` function takes the initial temperatures, thermal resistances, masses and specific heats of the system and, at each iteration, computes the next temperatures as specified in the formula, storing them in the `T_time_matrix` matrix, which is eventually returned.
 
-By running the script all the properties of the system will be randomly generated, but it is possible to modify some global variables relative to the number of objects, the duration of the simulation and the $dt$ interval. Also, by flagging the `environment` variable, the last object is transformed into the environment by changing its mass and specific heat to a very high value (theoretically should be $\infty$). Eventually, a png showing the temperature curves of the system over time is returned.
+By running the script all the properties of the system will be randomly generated, but it is possible to modify some global variables relative to the number of bodies, the duration of the simulation and the $dt$ interval. Also, by flagging the `environment` variable, the last body is transformed into the environment by changing its mass and specific heat to a very high value (theoretically should be $\infty$). Eventually, a png showing the temperature curves of the system over time is returned.
 
 The syntax of this algorithm is simple (and not very clean), but it is enough to understand how our formula can be roughly translated into a program to run a simple simulation script.
 
@@ -402,19 +400,19 @@ def numpy_algorithm(T_vector, R_matrix, m_vector, c_vector, environment=True):
         initial_m[-1] = 100000
         initial_c[-1] = 100000
 
-    T_time_matrix = np.empty((int(DURATION/DT), OBJECT_NUMBER))
+    T_time_matrix = np.empty((int(DURATION/DT), body_NUMBER))
     T_time_matrix[0] = T_vector
 
     R_inv_dot = 1 / R_matrix[:, :]
 
     for i in range(1, int(DURATION/DT)):
-        T_dot = (np.resize(T_time_matrix[i - 1], (OBJECT_NUMBER, OBJECT_NUMBER)).T - T_time_matrix[i - 1]).T
+        T_dot = (np.resize(T_time_matrix[i - 1], (body_NUMBER, body_NUMBER)).T - T_time_matrix[i - 1]).T
         dot_result = T_time_matrix[i - 1] - (DT / (m_vector * c_vector)) * (R_inv_dot * T_dot).sum(axis=0)
         T_time_matrix[i] = dot_result
 
     return T_time_matrix
 ```
-Here the idea is a bit more complex, and it's based on what we saw before: at each instant of time we can imagine to build to matrices, one containing all the thermal resistances of the objects, sorted by rows, and one containing all the *temperature differences between one temperature and all the others*, like this:
+Here the idea is a bit more complex, and it's based on what we saw before: at each instant of time we can imagine to build to matrices, one containing all the thermal resistances of the bodies, sorted by rows, and one containing all the *temperature differences between one temperature and all the others*, like this:
 
 $$
 R\_ inv\_ dot = 
@@ -436,7 +434,7 @@ T_1 - T_N & T_2 - T_N & ... & T_N - T_N
 \end{bmatrix}
 $$
 
-In the first line inside the for loop the $T\_ dot$ matrix is built. By multiplying these two matrices together element-wise (what is called an **Hadamard product**) and then summing up by columns, in a "single" shot we compute **the summation in the formula for every object**. Then, by making the element-wise product between this result with the vector of masses and specific heats
+In the first line inside the for loop the $T\_ dot$ matrix is built. By multiplying these two matrices together element-wise (what is called an **Hadamard product**) and then summing up by columns, in a "single" shot we compute **the summation in the formula for every body**. Then, by making the element-wise product between this result with the vector of masses and specific heats
 
 $$
 \begin{bmatrix}
@@ -460,7 +458,7 @@ T_i(t + dt) = T_i(t) (1 - \sum_{j=1}^{N}\frac{dt}{m_i \cdot c_i \cdot R_{ij}}) +
 $$
 
 With this final revisitation, we have split the contribution of $T_i(t)$ from the contribution of the other $T_j(t)$. Now, with a bit of immagination it is possible to
-rewrite this equation in terms of vectors and matrices products. For this purpose, let us define $\vec{T}$(t) as a vector containing all the temperatures of objects at istant $t$, that is
+rewrite this equation in terms of vectors and matrices products. For this purpose, let us define $\vec{T}$(t) as a vector containing all the temperatures of bodies at istant $t$, that is
 
 $$
 \vec{T}(t) = 
@@ -482,7 +480,7 @@ M_R =
 $$
 
 
-With these new objects we can now rewrite the above equation in the following way
+With these new bodies we can now rewrite the above equation in the following way
 
 $$
 \vec{T}(t + dt) = \vec{T}(t) \odot (\vec{1} - M_R \cdot \vec{1}) + M_R \cdot \vec{T}(t)
@@ -500,11 +498,11 @@ def vectorized_algorithm(T_vector, R_matrix, m_vector, c_vector, environment=Tru
     scaling_vector = DT / (m_vector * c_vector)
     Mr = (1 / R_matrix) * scaling_vector[:, np.newaxis]
             
-    T_time_matrix = np.empty((int(DURATION/DT), OBJECT_NUMBER))
+    T_time_matrix = np.empty((int(DURATION/DT), body_NUMBER))
     T_time_matrix[0] = T_vector
 
     for i in range(1, int(DURATION/DT)):
-        T_time_matrix[i] = T_time_matrix[i-1]*(1 - Mr @ np.ones(OBJECT_NUMBER)) + (Mr @ T_time_matrix[i-1])
+        T_time_matrix[i] = T_time_matrix[i-1]*(1 - Mr @ np.ones(body_NUMBER)) + (Mr @ T_time_matrix[i-1])
 
     return T_time_matrix
 ```
@@ -512,13 +510,13 @@ def vectorized_algorithm(T_vector, R_matrix, m_vector, c_vector, environment=Tru
 
 
 ## Algorithm comparisons
-Let us now put the described algorithms to the test, and observe their weaknesses and strengths. In the file `benchmark.py` is a simple script comparing the three approaches, which tests them by looking at the execution time they take as the number of objects or the size of the simulation interval increases. The output of the script should look something like this
+Let us now put the described algorithms to the test, and observe their weaknesses and strengths. In the file `benchmark.py` is a simple script comparing the three approaches, which tests them by looking at the execution time they take as the number of bodies or the size of the simulation interval increases. The output of the script should look something like this
 
 <p align="center">
 <img width="800" height="640" alt="benchmark_3alg" src="https://github.com/user-attachments/assets/c13661c8-42cd-4aac-8cbd-fa994e713587" />
 </p>
 
-The reported result is interesting: the plain python script presents a quadratic curve with respect to the number of objects, and a linear growth with respect to the duration of the interval, as we had already predicted. However, this is not the case for the other two algorithms: although they show a linear growth with respect to the duration of the interval, the complexity with respect to the number of objects seems to be very close to $o(1)$: this is where the parallel calculation has its way.
+The reported result is interesting: the plain python script presents a quadratic curve with respect to the number of bodies, and a linear growth with respect to the duration of the interval, as we had already predicted. However, this is not the case for the other two algorithms: although they show a linear growth with respect to the duration of the interval, the complexity with respect to the number of bodies seems to be very close to $o(1)$: this is where the parallel calculation has its way.
 
 We can then think of comparing the two parallel algorithms, and this is what comes out:
 
@@ -526,15 +524,15 @@ We can then think of comparing the two parallel algorithms, and this is what com
 <img width="800" height="640" alt="benchmark_2alg" src="https://github.com/user-attachments/assets/e23372f9-5a12-40b2-b20d-bce9b96f51c9" />
 </p>
 
-Also in this case we see the quadratic behaviour emerging from the numpy algorithm. Note that, even though the number of objects quadrupled in this scenario, the vectorized approach remained unaffected.
+Also in this case we see the quadratic behaviour emerging from the numpy algorithm. Note that, even though the number of bodies quadrupled in this scenario, the vectorized approach remained unaffected.
 
-Now let's try to push the vectorized algorithm to its limits and see how much parallel execution can bear. Let's force the simulation with up to $2000$ objects (more than three times than before), and with up to 1 million seconds of duration. The trend is the following:
+Now let's try to push the vectorized algorithm to its limits and see how much parallel execution can bear. Let's force the simulation with up to $2000$ bodies (more than three times than before), and with up to 1 million seconds of duration. The trend is the following:
 
 <p align="center">
 <img width="800" height="640" alt="benchmark_1alg" src="https://github.com/user-attachments/assets/dccc8332-d430-4b02-8898-e02d582fba8e" />
 </p>
 
-This third set of graphs shows us that the quadratic dependence on the number of objects is still present in our code, and it couldn't be otherwise, since the mathematical structure we have chosen implies a quadratic dependence. The most important information we can derive from the graph is the better degree of optimization of the third approach compared to all the others, reminding us of the importance of using specific libraries such as numpy for computations where performance is crucial, rather than reinventing the wheel with our own code.
+This third set of graphs shows us that the quadratic dependence on the number of bodies is still present in our code, and it couldn't be otherwise, since the mathematical structure we have chosen implies a quadratic dependence. The most important information we can derive from the graph is the better degree of optimization of the third approach compared to all the others, reminding us of the importance of using specific libraries such as numpy for computations where performance is crucial, rather than reinventing the wheel with our own code.
 
 
 
@@ -553,7 +551,7 @@ $$
 T_i(t + dt) = T_i(t) - \frac{dt}{m_i \cdot c_i} ( \ \sum_{j=1}^{N + 1}\frac{1}{R_{ij}} \cdot (T_i(t) - T_j(t)) \ ) \quad \quad \quad T_{N+1} = T_{env}, \quad m_{N+1} = \infty, \quad c_{N+1} = \infty
 $$
 
-Our intention is to derive from this equation the *heat diffusion equation*, a well known **partial differential equation** that describes how the heat flows into objects. To this purpose, we need to arrange our graph model in such a way that it can be described by a cartesian space. We will therefor consider the following three-dimensional structure below, where each node represents an *infinitesimal* part of the space, and use it to represent the structure of a general object $\Omega$.
+Our intention is to derive from this equation the *heat diffusion equation*, a well known **partial differential equation** that describes how the heat flows into bodies. To this purpose, we need to arrange our graph model in such a way that it can be described by a cartesian space. We will therefor consider the following three-dimensional structure below, where each node represents an *infinitesimal* part of the space, and use it to represent the structure of a general body $\Omega$.
 
 <p align="center">
 <img width="600" height="400" alt="image" src="https://github.com/user-attachments/assets/ffdd8487-3232-461c-8b08-4eed6d66766a" />
@@ -572,7 +570,7 @@ Also, an alternative representation of this structure is the one that follows, i
 <img width="600" height="400" alt="image" src="https://github.com/user-attachments/assets/3532bfd5-f983-4a3b-911e-593b29a641a2" />
 </p>
 
-What we are basically doing is giving a precise structure to our graph, making the nodes reflect the position of each point of $\mathbb{R}^3$. Since now the graph lives in a structured space it is necessary to also add spacial references to the function we've been using: $T(t) \rightarrow T(t, x, y, z)$. Also note that the mass and specific heat are now relative to a single object. Based on this structure, the equation above can be rewritten as:
+What we are basically doing is giving a precise structure to our graph, making the nodes reflect the position of each point of $\mathbb{R}^3$. Since now the graph lives in a structured space it is necessary to also add spacial references to the function we've been using: $T(t) \rightarrow T(t, x, y, z)$. Also note that the mass and specific heat are now relative to a single body. Based on this structure, the equation above can be rewritten as:
 
 $$
 T(t + dt, x, y, z) = T(t, x, y, z) - \frac{dt}{m \cdot c} ( \ \frac{T(t, x, y, z) - T(t, x + dx, y, z)}{R_{dx+}} + \frac{T(t, x, y, z) - T(t, x - dx, y, z)}{R_{dx-}} + \frac{T(t, x, y, z) - T(t, x, y + dy, z)}{R_{dy+}} + \frac{T(t, x, y, z) - T(t, x, y - dy, z)}{R_{dy-}} + \frac{T(t, x, y, z) - T(t, x, y, z + dz)}{R_{dz+}} + \frac{T(t, x, y, z) - T(t, x, y, z - dz)}{R_{dz-}} \ )
@@ -608,13 +606,13 @@ $$
 \frac{\partial T(t, x, y, z)}{\partial t} = \frac{\lambda}{\rho (x, y, z) \cdot c} ( \ \frac{\partial^2 T(t, x, y, z)}{\partial x^2} + \frac{\partial^2 T(t, x, y, z)}{\partial y^2} + \frac{\partial^2 T(t, x, y, z)}{\partial z^2} \ )
 $$
 
-Which represents the **heat diffusion differential equation** in $\mathbb{R}^3$ space for a generic object $\Omega$ with density function $\rho(x, y, z)$, specific heat $c$ and constant thermal conductivity $\lambda$. 
+Which represents the **heat diffusion differential equation** in $\mathbb{R}^3$ space for a generic body $\Omega$ with density function $\rho(x, y, z)$, specific heat $c$ and constant thermal conductivity $\lambda$. 
 
 
 
 # Web Demo
-The results of these studies are presented in a simple web application located in the web-demo folder. This interactive demo allows users to manipulate the heat distribution and its properties through various sliders and buttons.
+The results of these studies are presented in a simple [web application](/heat-diffusion-demo/). This interactive demo allows users to manipulate the heat distribution and its properties through various sliders and buttons.
 
 The geometry chosen for the simulation is a **planar surface**, which is ideal for its ease of setup and animation. As explained in the "Derivation of the Heat Diffusion Differential Equation" section, each point on the plane corresponds to a node in a graph. This approach transforms discrete properties like thermal resistance and mass into continuous ones: thermal conductivity ($$\lambda$$) and density ($$\rho$$). For simplicity, every node (or cell) in the simulation is assigned the same values for $$\lambda$$, specific heat capacity $$c$$, and $$\rho$$.
 
-The algorithm applied is a slight variation of the plain python one, adapted for javascript. The computation of the next steps is done instant after instant, so the evolution of the system is not predetermined. Moreover, since the numerical method applied is **Forward Euler**, the simulation might be **instable** for certain values of $$\lambda$$, $$c$$ and $$\rho$$.
+The algorithm applied is a slight variation of the plain python one, adapted for Javascript. The computation of the next steps is done instant after instant, so the evolution of the system is not predetermined. Moreover, since the numerical method applied is **Forward Euler**, the simulation might be **instable** for certain values of $$\lambda$$, $$c$$ and $$\rho$$.

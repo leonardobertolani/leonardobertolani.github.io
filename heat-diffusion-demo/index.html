@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heat Diffusion</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <main> <div id="left-column">
+            <h3>Thermodynamical Properties</h3>
+            <div class="property-group">
+                <label for="conductivity-input">Thermal conductivity (&lambda;)</label>
+                <input type="range" id="conductivity-input" min="0.1" max="10" step="0.1" value="1">
+                <span id="conductivity-value">1.0</span>
+            </div>
+            <div class="property-group">
+                <label for="specific-heat-input">Specific heat (c)</label>
+                <input type="range" id="heat-capacity-input" min="0.1" max="10" step="0.1" value="1">
+                <span id="heat-capacity-value">1.0</span>
+            </div>
+            <div class="property-group">
+                <label for="density-input">Density (&rho;)</label>
+                <input type="range" id="density-input" min="0.1" max="10" step="0.1" value="1">
+                <span id="density-value">1.0</span>
+            </div>
+        </div>
+
+        <div id="center-column">
+            <h2>Heat Diffusion Simulation</h2>
+            <div id="grid-container"></div>
+            <div id="controls">
+                <button id="simulate-btn">Start simulation</button>
+            </div>
+        </div>
+
+        <div id="right-column">
+            <h3>Distributions</h3>
+            <button class="generate-btn" id="randomize-btn">Random</button>
+            <button class="generate-btn" id="corner-btn">Corners</button>
+            <button class="generate-btn" id="center-btn">Center</button>
+            <button class="generate-btn" id="side-btn">Side</button>
+        </div>
+    </main> <script src="script.js"></script>
+    <script src="buttons.js"></script>
+</body>
+</html>
