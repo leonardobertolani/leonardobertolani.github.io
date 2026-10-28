@@ -6,6 +6,8 @@ tags: [research, physics]
 
 In this post I'd like to show some results I obtained from my heat diffusion brief study. In particular, starting from basic thermodynamical laws and some simple assumption about the physical bodies involved, I've shown how to construct a method to numerically determine the evolution of the bodies temperature over time, when these are linked together and they exchange heat one with the other. Then, I've implemented this method using different algorithm with different parallelisation levels, and I've compared their performance. In the final part of this post, I've also shown how the numerical formulation I've found can be used to derive the heat diffusion differential equation for a generic body. Hope it could be interesting :)
 
+> **Try the equations in 3D:** [Open Thermal Flow Lab]({{ "/thermal-flow-lab/" | relative_url }}) to place hot spots on engineering objects and watch heat diffuse through their volume.
+
 ## Table of Contents
 - [Tackling the problem](#tackling-the-problem)
   - [First problem: single body and the environment](#first-problem-single-body-and-the-environment)
@@ -21,6 +23,7 @@ In this post I'd like to show some results I obtained from my heat diffusion bri
   - [Derivation of the heat diffusion differential equation](#derivation-of-the-heat-diffusion-differential-equation)
   - [Similarities between heat diffusion and Neural Networks](#similarities-between-heat-diffusion-and-neural-networks)
 - [Web Demo](#web-demo)
+- [Interactive 3D simulator](#interactive-3d-simulator)
 
 
 # Tackling the problem
@@ -616,3 +619,13 @@ The results of these studies are presented in a simple [web application](/heat-d
 The geometry chosen for the simulation is a **planar surface**, which is ideal for its ease of setup and animation. As explained in the "Derivation of the Heat Diffusion Differential Equation" section, each point on the plane corresponds to a node in a graph. This approach transforms discrete properties like thermal resistance and mass into continuous ones: thermal conductivity ($$\lambda$$) and density ($$\rho$$). For simplicity, every node (or cell) in the simulation is assigned the same values for $$\lambda$$, specific heat capacity $$c$$, and $$\rho$$.
 
 The algorithm applied is a slight variation of the plain python one, adapted for Javascript. The computation of the next steps is done instant after instant, so the evolution of the system is not predetermined. Moreover, since the numerical method applied is **Forward Euler**, the simulation might be **instable** for certain values of $$\lambda$$, $$c$$ and $$\rho$$.
+
+# Interactive 3D simulator
+
+[**Launch Thermal Flow Lab →**]({{ "/thermal-flow-lab/" | relative_url }})
+
+This three-dimensional application extends the study to solid objects using the optimized vector formula above. Choose a pipe, piston and cylinder, block, flanged pipe, finned heat sink, or stepped shaft—or load your own closed STL, OBJ, GLB, or embedded glTF model. Click to apply hot or cold spots, then orbit and zoom while temperatures evolve.
+
+The object is discretized into a network of volume cells. A sparse evaluation of the vector update computes heat exchange between neighboring cells, with automatically bounded Forward Euler time steps. Material properties, physical dimensions, resolution, and optional convection to ambient air are adjustable. The information button beside the color scale shows live temperature statistics and history.
+
+The simulation runs in your browser, and imported models stay on your device. It is an exploratory conduction model: grid resolution affects thin walls and small gaps, and it does not simulate fluid flow, radiation, piston motion, or contact resistance. The original [two-dimensional demo]({{ "/heat-diffusion-demo/" | relative_url }}) remains available.

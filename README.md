@@ -29,3 +29,15 @@ The filename supplies the date and URL. Posts automatically use the post layout 
 ```sh
 bundle exec jekyll serve
 ```
+
+## Thermal Flow Lab
+
+The 3D simulator is served at `/thermal-flow-lab/` and linked from the heat-diffusion article. The existing 2D demo remains at `/heat-diffusion-demo/`.
+
+`thermal-flow-lab/` contains the production files served by GitHub Pages. `_thermal-flow-lab/` contains the editable application source; Jekyll excludes underscore-prefixed directories from the generated site. To rebuild after editing the source:
+
+```sh
+./scripts/build-thermal-flow.sh
+```
+
+This uses Node.js 22.12+ or a supported newer LTS, installs locked npm dependencies, and rebuilds the static bundle with relative asset paths so its Web Worker works below the site's subdirectory. Commit both the source changes and generated `thermal-flow-lab/` files. GitHub Pages continues to use the existing Jekyll publishing setup; no server backend is required.
