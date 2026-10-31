@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Heat diffusion · Algorithm benchmark</title>
+  <link rel="stylesheet" href="chart.css">
+  <script src="vendor/plotly-gl3d-2.35.2.min.js" defer></script>
+  <script src="chart.js" defer></script>
+</head>
+<body>
+<main class="benchmark">
+  <header>
+    <p class="eyebrow">Heat diffusion / measured performance</p>
+    <h1>One system, two algorithms</h1>
+    <p class="intro">25 measured combinations · 5 runs per algorithm · fixed Δt = 1 s</p>
+  </header>
+  <div class="toolbar" aria-label="Chart controls">
+    <div class="legend" role="group" aria-label="Visible algorithms">
+      <label><input type="checkbox" name="numpy" checked> Plain NumPy</label>
+      <label><input type="checkbox" name="vectorial" checked> Fully vectorial</label>
+    </div>
+    <div class="view-controls">
+      <label class="scale-label" for="scale">Runtime scale
+        <select id="scale"><option value="linear">Linear</option><option value="log">Logarithmic</option></select>
+      </label>
+      <button id="zoom-in" type="button" aria-label="Zoom in">+</button>
+      <button id="zoom-out" type="button" aria-label="Zoom out">−</button>
+      <button id="reset" type="button">Reset view</button>
+    </div>
+  </div>
+  <p id="status" class="status" role="status">Loading the 3D view…</p>
+  <div id="plot" tabindex="0" role="region" aria-label="Interactive benchmark surfaces. Drag or use arrow keys to rotate; use the zoom buttons to zoom. Exact values are also available in the measured-data table."></div>
+  <p class="plot-hint">Drag to rotate · hover over dots for measured values · surfaces interpolate between samples</p>
+  <section class="selection" aria-label="Inspect a measured combination">
+    <div class="sliders">
+      <div class="slider">
+        <label for="objects">Objects <output id="objects-value" for="objects">1,024</output></label>
+        <input id="objects" type="range" min="0" max="4" step="1" value="4" aria-valuetext="1024 objects">
+      </div>
+      <div class="slider">
+        <label for="duration">Simulation time <output id="duration-value" for="duration">2,000 s</output></label>
+        <input id="duration" type="range" min="0" max="4" step="1" value="4" aria-valuetext="2000 seconds">
+      </div>
+    </div>
+    <div class="metrics" id="selection-summary" role="group" aria-live="polite">
+      <div class="metric numpy"><span>Plain NumPy</span><strong id="numpy-time">—</strong><small>median runtime</small></div>
+      <div class="metric vectorial"><span>Fully vectorial</span><strong id="vectorial-time">—</strong><small>median runtime</small></div>
+      <div class="metric"><span>Speedup</span><strong id="speedup">—</strong><small>NumPy / vectorial</small></div>
+    </div>
+  </section>
+  <footer>
+    <p class="method">Median wall-clock time, including matrix setup and storage of every time step. Identical seeded inputs, float64, one BLAS thread. Timings depend on hardware and workload.</p>
+    <p class="method">11th Gen Intel(R) Core(TM) i7-1165G7 @ 2.80GHz · NumPy 2.3.5 · OpenBLAS 0.3.30 · 2026-10-29</p>
+    <div class="downloads"><a href="results.csv" download>Download CSV</a><a href="results.json" download>Raw timings &amp; method</a><a href="benchmark.py" download>Benchmark source</a></div>
+    <details id="measurements">
+      <summary>All 25 measured combinations</summary>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Measured runtimes table">
+        <table><thead><tr><th scope="col">Objects</th><th scope="col">Simulated (s)</th><th scope="col">NumPy (s)</th><th scope="col">Vectorial (s)</th><th scope="col">Speedup</th></tr></thead><tbody>
+        <tr><td>64</td><td>100</td><td>0.001432</td><td>0.000307</td><td>4.66×</td></tr>
+<tr><td>128</td><td>100</td><td>0.003045</td><td>0.000683</td><td>4.46×</td></tr>
+<tr><td>256</td><td>100</td><td>0.013194</td><td>0.001436</td><td>9.19×</td></tr>
+<tr><td>512</td><td>100</td><td>0.056262</td><td>0.004637</td><td>12.13×</td></tr>
+<tr><td>1,024</td><td>100</td><td>0.332751</td><td>0.023703</td><td>14.04×</td></tr>
+<tr><td>64</td><td>250</td><td>0.003550</td><td>0.000543</td><td>6.53×</td></tr>
+<tr><td>128</td><td>250</td><td>0.008963</td><td>0.000860</td><td>10.42×</td></tr>
+<tr><td>256</td><td>250</td><td>0.028844</td><td>0.001991</td><td>14.49×</td></tr>
+<tr><td>512</td><td>250</td><td>0.143234</td><td>0.012675</td><td>11.30×</td></tr>
+<tr><td>1,024</td><td>250</td><td>0.834430</td><td>0.058982</td><td>14.15×</td></tr>
+<tr><td>64</td><td>500</td><td>0.005608</td><td>0.000904</td><td>6.20×</td></tr>
+<tr><td>128</td><td>500</td><td>0.014443</td><td>0.001637</td><td>8.83×</td></tr>
+<tr><td>256</td><td>500</td><td>0.062158</td><td>0.004295</td><td>14.47×</td></tr>
+<tr><td>512</td><td>500</td><td>0.313819</td><td>0.023741</td><td>13.22×</td></tr>
+<tr><td>1,024</td><td>500</td><td>1.668713</td><td>0.106253</td><td>15.71×</td></tr>
+<tr><td>64</td><td>1,000</td><td>0.012411</td><td>0.001606</td><td>7.73×</td></tr>
+<tr><td>128</td><td>1,000</td><td>0.029477</td><td>0.003092</td><td>9.53×</td></tr>
+<tr><td>256</td><td>1,000</td><td>0.105037</td><td>0.007053</td><td>14.89×</td></tr>
+<tr><td>512</td><td>1,000</td><td>0.592821</td><td>0.047481</td><td>12.49×</td></tr>
+<tr><td>1,024</td><td>1,000</td><td>3.144604</td><td>0.198959</td><td>15.81×</td></tr>
+<tr><td>64</td><td>2,000</td><td>0.023720</td><td>0.003156</td><td>7.51×</td></tr>
+<tr><td>128</td><td>2,000</td><td>0.065335</td><td>0.005648</td><td>11.57×</td></tr>
+<tr><td>256</td><td>2,000</td><td>0.246564</td><td>0.018420</td><td>13.39×</td></tr>
+<tr><td>512</td><td>2,000</td><td>1.155389</td><td>0.093972</td><td>12.30×</td></tr>
+<tr><td>1,024</td><td>2,000</td><td>6.606476</td><td>0.423488</td><td>15.60×</td></tr>
+        </tbody></table>
+      </div>
+    </details>
+    <noscript><style>#status,#plot,.selection,.toolbar,.plot-hint{display:none}</style><p>The interactive view needs JavaScript. Open the measured-data table above or download the results.</p></noscript>
+  </footer>
+</main>
+</body>
+</html>

@@ -1,0 +1,317 @@
+/* This article opts in through post_style; other posts retain their typography. */
+.post--heat-diffusion {
+  --reading-width: 740px;
+  max-width: 100%;
+  margin-inline: auto;
+}
+
+.post--heat-diffusion .post-header,
+.post--heat-diffusion .post-content,
+.post--heat-diffusion .post-tags {
+  max-width: var(--reading-width);
+  margin-inline: auto;
+}
+
+.post--heat-diffusion .post-header { padding-bottom: 2rem; }
+.post--heat-diffusion .post-header h1 {
+  max-width: 100%;
+  font-size: clamp(2.4rem, 5.5vw, 3.7rem);
+  line-height: 1.08;
+  text-wrap: balance;
+}
+.post--heat-diffusion .post-description { max-width: 100%; }
+.post--heat-diffusion .post-content {
+  font-family: inherit;
+  font-size: 1.0625rem;
+  line-height: 1.85;
+  overflow-wrap: break-word;
+}
+.post--heat-diffusion .post-content > p { margin-bottom: 1.5rem; }
+.post--heat-diffusion .post-content :is(h2, h3, h4) {
+  font-family: inherit;
+  font-weight: 650;
+  line-height: 1.3;
+  text-wrap: balance;
+  scroll-margin-top: 2rem;
+}
+.post--heat-diffusion .post-content h2 {
+  margin: 4.5rem 0 1.5rem;
+  padding-top: 1.6rem;
+  border-top: 1px solid var(--line);
+  font-size: clamp(1.7rem, 4vw, 2.15rem);
+}
+.post--heat-diffusion .post-content h3 {
+  margin: 3rem 0 1.2rem;
+  font-size: 1.4rem;
+  letter-spacing: -.025em;
+}
+.post--heat-diffusion .post-content h4 {
+  margin: 2rem 0 1rem;
+  font-size: 1.1rem;
+  letter-spacing: -.015em;
+}
+.post--heat-diffusion blockquote {
+  margin: 2rem 0;
+  padding: 1.1rem 1.4rem;
+  border-left: 3px solid var(--accent);
+  border-radius: 0 8px 8px 0;
+  background: #edf3ef;
+  font-size: .95rem;
+}
+.post--heat-diffusion blockquote p:last-child { margin-bottom: 0; }
+
+.post--heat-diffusion .article-toc {
+  display: block;
+  margin: 2.5rem 0 3.5rem;
+  padding: 1.5rem 1.7rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #f6f6f1;
+  font-size: .9rem;
+  line-height: 1.6;
+}
+.post--heat-diffusion .article-toc h2 {
+  margin: 0 0 1.2rem;
+  padding: 0;
+  border: 0;
+  font-size: 1.05rem;
+  letter-spacing: -.01em;
+}
+.post--heat-diffusion .article-toc > ul { padding: 0; margin: 0; list-style: none; }
+.post--heat-diffusion .article-toc > ul > li + li { margin-top: .85rem; }
+.post--heat-diffusion .article-toc > ul > li > a { font-weight: 650; }
+.post--heat-diffusion .article-toc ul ul {
+  margin: .35rem 0 0 .15rem;
+  padding-left: 1.2rem;
+  border-left: 1px solid #d6dfd9;
+  list-style: none;
+}
+.post--heat-diffusion .article-toc li li { margin: .3rem 0; }
+.post--heat-diffusion .article-toc a { text-decoration: none; }
+.post--heat-diffusion .article-toc a:hover { text-decoration: underline; }
+
+/* Inline code can wrap; program listings preserve their indentation and scroll. */
+.post--heat-diffusion .post-content code {
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: .83em;
+  padding: .15em .35em;
+  border-radius: 4px;
+  background: #eeeee8;
+  overflow-wrap: anywhere;
+}
+.post--heat-diffusion div.highlighter-rouge {
+  margin-block: 1.75rem 2rem;
+  overflow: hidden;
+  border: 1px solid #dce3df;
+  border-radius: 10px;
+  background: #f5f7f5;
+}
+.post--heat-diffusion .highlight { background: transparent; }
+.post--heat-diffusion pre.highlight {
+  margin: 0;
+  padding: 1.4rem 1.5rem;
+  overflow-x: auto;
+  font-size: .9rem;
+  line-height: 1.75;
+  tab-size: 4;
+  scrollbar-color: #9bada4 #edf0ed;
+}
+.post--heat-diffusion pre.highlight code {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #273a36;
+  font-size: inherit;
+  white-space: pre;
+  overflow-wrap: normal;
+}
+.post--heat-diffusion .code-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: .55rem 1rem;
+  border-bottom: 1px solid #dce3df;
+  background: #edf1ed;
+  color: #50645c;
+  font-size: .75rem;
+  font-weight: 600;
+  letter-spacing: .02em;
+}
+.post--heat-diffusion .code-copy {
+  padding: .25rem .65rem;
+  border: 1px solid #c9d4cd;
+  border-radius: 5px;
+  background: var(--paper);
+  color: var(--accent);
+  font: inherit;
+  cursor: pointer;
+}
+.post--heat-diffusion .highlight :is(.k, .kd, .kn, .kp, .kr, .ow) { color: #774287; font-weight: 600; }
+.post--heat-diffusion .highlight :is(.nf, .nc) { color: #17635b; font-weight: 600; }
+.post--heat-diffusion .highlight :is(.nb, .bp) { color: #245b8a; }
+.post--heat-diffusion .highlight :is(.mi, .mf, .mh, .il, .kc) { color: #995019; }
+.post--heat-diffusion .highlight :is(.s, .s1, .s2, .si, .se, .sd) { color: #486d2e; }
+.post--heat-diffusion .highlight :is(.c, .c1, .cm) { color: #66736d; font-style: italic; }
+.post--heat-diffusion .highlight :is(.o, .p) { color: #53605b; }
+
+/* Keep each equation on one line without making the document wider. */
+.post--heat-diffusion mjx-container[display="true"] {
+  display: block;
+  max-width: 100%;
+  margin: 1.8rem 0 !important;
+  padding: 1rem .4rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-color: #a8b9b0 #f0f2ed;
+}
+.post--heat-diffusion mjx-container[display="true"] > mjx-math { padding-inline: .25rem; }
+
+.post--heat-diffusion .article-figure {
+  margin: 2.25rem 0;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: white;
+}
+.post--heat-diffusion .figure-link {
+  display: block;
+  position: relative;
+  width: fit-content;
+  max-width: 100%;
+  margin-inline: auto;
+  border-radius: 5px;
+  cursor: zoom-in;
+}
+.post--heat-diffusion .figure-link::after {
+  content: "+";
+  position: absolute;
+  top: .25rem;
+  right: .25rem;
+  display: grid;
+  place-items: center;
+  width: 1.8rem;
+  height: 1.8rem;
+  border: 1px solid #dce3df;
+  border-radius: 50%;
+  background: #fdfcf9ed;
+  color: var(--accent);
+  font: 1.2rem/1 ui-sans-serif, system-ui, sans-serif;
+}
+.post--heat-diffusion .article-figure img { display: block; height: auto; margin-inline: auto; }
+.post--heat-diffusion .article-figure--chart .figure-link { width: 100%; }
+.post--heat-diffusion .article-figure--chart img { width: 100%; }
+
+.post--heat-diffusion :is(a, button, pre, mjx-container):focus-visible,
+.heat-figure-dialog :is(a, button, .figure-viewport):focus-visible {
+  outline: 3px solid #548b7d;
+  outline-offset: 4px;
+}
+.heat-figure-dialog {
+  width: min(1150px, calc(100vw - 2rem));
+  max-width: none;
+  max-height: calc(100dvh - 2rem);
+  padding: 0;
+  border: 1px solid #dce3df;
+  border-radius: 12px;
+  background: white;
+  color: var(--ink);
+  box-shadow: 0 20px 80px #13282033;
+}
+.heat-figure-dialog::backdrop { background: #152923b8; }
+.heat-figure-dialog .figure-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: .75rem 1rem;
+  border-bottom: 1px solid var(--line);
+  background: var(--paper);
+  font-size: .85rem;
+}
+.heat-figure-dialog .figure-close {
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: white;
+  color: var(--ink);
+  font-size: 1.25rem;
+  cursor: pointer;
+}
+.heat-figure-dialog .figure-viewport {
+  overflow: auto;
+  max-height: calc(100dvh - 7rem);
+  overscroll-behavior: contain;
+}
+.heat-figure-dialog img { display: block; max-width: none; margin: 0 auto; }
+html:has(.heat-figure-dialog[open]) { overflow: hidden; }
+
+@media (min-width: 980px) {
+  .post--heat-diffusion :is(.article-figure--chart, div.highlighter-rouge) {
+    width: calc(100% + 100px);
+    margin-left: -50px;
+  }
+}
+@media (max-width: 600px) {
+  .post--heat-diffusion .post-content { font-size: 1rem; line-height: 1.8; }
+  .post--heat-diffusion .post-header { margin-bottom: 2rem; }
+  .post--heat-diffusion .post-content h2 { margin-top: 3rem; }
+  .post--heat-diffusion .article-toc { padding: 1.2rem; }
+  .post--heat-diffusion .article-figure { padding: .35rem; border-radius: 8px; }
+  .post--heat-diffusion pre.highlight { padding: 1rem; font-size: .8rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html:has(.post--heat-diffusion) { scroll-behavior: auto; }
+}
+
+/* Interactive benchmark, contained separately from the article typography. */
+.post--heat-diffusion .benchmark-embed { margin: 2rem 0; }
+.post--heat-diffusion .benchmark-frame { display: block; width: 100%; border: 0; min-height: 700px; }
+.post--heat-diffusion .benchmark-open { margin: .8rem 0 0; text-align: right; font-size: .8rem; color: var(--muted); }
+@media (min-width: 980px) {
+  .post--heat-diffusion .benchmark-embed { width: calc(100% + 100px); margin-left: -50px; }
+}
+
+/* Approved vector illustrations, each occupying the reading column. */
+.post--heat-diffusion .article-figure--tile {
+  padding: 0;
+  overflow: hidden;
+  background: var(--paper);
+  border-color: var(--line);
+  scroll-margin-top: 2rem;
+}
+.post--heat-diffusion .article-figure--tile .figure-link { width: 100%; }
+.post--heat-diffusion .article-figure--tile img { width: 100%; max-width: 100%; }
+
+/* Exact-solution playgrounds share the benchmark's wider desktop frame. */
+.post--heat-diffusion .scenario-embed { margin: 2rem 0; }
+.post--heat-diffusion .scenario-frame {
+  display: block;
+  width: 100%;
+  min-height: 500px;
+  border: 1px solid #d7e1d7;
+  border-radius: 12px;
+  background: #fbfaf6;
+}
+@media (min-width: 980px) {
+  .post--heat-diffusion .scenario-embed { width: calc(100% + 100px); margin-left: -50px; }
+}
+
+/* The illustrations use the same warm paper and restrained teal as the page. */
+.post--heat-diffusion .article-figure--tile .figure-link::after {
+  background: #fdfcf9ed;
+  color: var(--accent);
+  border-color: #cbd8d2;
+}
+.heat-figure-dialog--illustration {
+  background: var(--paper);
+  color: var(--ink);
+  border-color: var(--line);
+}
+.heat-figure-dialog--illustration .figure-controls,
+.heat-figure-dialog--illustration .figure-close {
+  background: var(--card);
+  color: var(--ink);
+  border-color: var(--line);
+}
+.heat-figure-dialog--illustration .figure-controls a { color: var(--accent); }

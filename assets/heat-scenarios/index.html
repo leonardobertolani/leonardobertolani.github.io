@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Heat exchange · Analytical simulator</title>
+<link rel="stylesheet" href="simulator.css">
+<script type="module" src="simulator.mjs"></script>
+</head>
+<body>
+<main class="simulator">
+<header><div><p class="eyebrow">Heat exchange / analytical playground</p><h1 id="title">Temperature exchange</h1></div><button id="reset" type="button">Reset</button></header>
+<p id="intro" class="intro"></p>
+<div class="legend" id="legend"></div>
+<div class="chart-wrap"><svg id="chart" viewBox="0 0 720 310" role="img" aria-labelledby="chart-title chart-desc"><title id="chart-title">Temperature over time</title><desc id="chart-desc">Exact temperature curves. Use the time slider below to inspect values.</desc><g id="grid"></g><g id="curves"></g><g id="probe"></g></svg></div>
+<div class="inspection"><label for="time">Inspect time <output id="time-value" for="time"></output></label><input id="time" type="range" min="0" max="1000" value="250"><div id="readings" class="readings" aria-live="off"></div></div>
+<form id="parameters" novalidate><div id="body-controls" class="body-controls"></div><fieldset class="run-controls"><legend>Connections &amp; time</legend><div id="connection-controls" class="fields"></div></fieldset></form>
+<p id="status" class="status" role="status">Change a parameter to redraw the curves.</p>
+<details><summary>Model &amp; analytical solution</summary><div id="model" class="model"></div><p>Mass in kg; specific heat in J/(kg·K); thermal resistance in K/W; time in seconds. Temperatures are in °C; temperature differences have the same numerical value in kelvin. Each body has a uniform temperature and constant properties.</p></details>
+<noscript>Enable JavaScript to change parameters and view the analytical temperature curves.</noscript>
+</main>
+</body></html>

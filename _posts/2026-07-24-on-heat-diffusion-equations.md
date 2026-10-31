@@ -2,11 +2,14 @@
 title: On Heat Diffusion Equations
 description: A brief study on the diffusion of heat in physical bodies.
 tags: [research, physics]
+post_style: heat-diffusion
 ---
 
 In this post I'd like to show some results I obtained from my heat diffusion brief study. In particular, starting from basic thermodynamical laws and some simple assumption about the physical bodies involved, I've shown how to construct a method to numerically determine the evolution of the bodies temperature over time, when these are linked together and they exchange heat one with the other. Then, I've implemented this method using different algorithm with different parallelisation levels, and I've compared their performance. In the final part of this post, I've also shown how the numerical formulation I've found can be used to derive the heat diffusion differential equation for a generic body. Hope it could be interesting :)
 
 > **Try the equations in 3D:** [Open Thermal Flow Lab]({{ "/thermal-flow-lab/" | relative_url }}) to place hot spots on engineering objects and watch heat diffuse through their volume.
+
+<nav class="article-toc" aria-labelledby="table-of-contents" markdown="1">
 
 ## Table of Contents
 - [Tackling the problem](#tackling-the-problem)
@@ -15,18 +18,16 @@ In this post I'd like to show some results I obtained from my heat diffusion bri
   - [Third problem: two bodies and the environment](#third-problem-two-bodies-and-the-environment)
   - [A more general way](#a-more-general-way)
 - [Optimizing the numerical solution](#optimizing-the-numerical-solution)
-  - [First attempt: plain python](#first-attempt-plain-python)
-  - [Second attempt: numpy](#second-attempt-numpy)
-  - [Third attempt: vectorized algorithm](#third-attempt-vectorized-algorithm)
+  - [First attempt: plain numpy](#first-attempt-plain-numpy)
+  - [Second attempt: full matrix-vector form](#second-attempt-full-matrix-vector-form)
   - [Algorithm comparisons](#algorithm-comparisons)
 - [A sprinkle of LSD](#a-sprinkle-of-lsd)
   - [Derivation of the heat diffusion differential equation](#derivation-of-the-heat-diffusion-differential-equation)
-  - [Similarities between heat diffusion and Neural Networks](#similarities-between-heat-diffusion-and-neural-networks)
-- [Web Demo](#web-demo)
 - [Interactive 3D simulator](#interactive-3d-simulator)
 
+</nav>
 
-# Tackling the problem
+## Tackling the problem
 The problem of determining the temperature variation of a body over time can be quite complicated. Let us therefore make a few preliminary remarks: first, we will consider free evolution systems, i.e. systems that evolve freely once the initial conditions are fixed.
 Furthermore, we will consider temperature as the only function of time, all other variables being independent of any other quantity.
 
@@ -35,16 +36,18 @@ we will find a way to generalise the calculation and find any solution numerical
 
 
 
-## First problem: single body and the environment
+### First problem: single body and the environment
 
 Let's consider an body of mass $m$, temperature $T_{init}$ and specific heat $c$ surrounded by an environment with a steady temperature $T_{env}$ and with a thermal resistance $R$ between them. 
 From this, we would like to find the temperature function $T(t)$ of the body as time passes, that is, find the rate of change in temperature over time. Actually, it's exponential.
 
 To find it, let us consider a system with the properties we provided. It doesn't matter if the body is cooler or hotter than the environment, physics works both ways :)
 
-<p align="center">
-  <img width="596" alt="image" src="https://github.com/leonardobertolani/temperatures/assets/102794282/df7a909f-f8de-4c36-b26b-96dd548bf111"/>
-</p>
+<figure class="article-figure article-figure--tile" id="diagram-1">
+  <a class="figure-link" href="{{ '/assets/images/heat-diffusion/01-body-environment.svg' | relative_url }}" aria-label="Enlarge diagram 1">
+    <img loading="lazy" decoding="async" width="720" height="480" alt="A body with temperature T(t), mass m and specific heat c exchanges heat through resistance R with a constant-temperature environment." src="{{ '/assets/images/heat-diffusion/01-body-environment.svg' | relative_url }}">
+  </a>
+</figure>
 
 Given that, let us quantify the total heat transfered by the body or to the body in a very small period of time $dt$:
 
@@ -75,7 +78,12 @@ $$T(t) = (T_{init} - T_{env})e^{-\frac{1}{R \cdot m \cdot c}t} + T_{env}$$
 
 This function goes to $T_{env}$ when time goes to infinity, and equals $T_{init}$ at the starting point $T(0)$. It seems to work fine! 
 
-Starting from this analytical solution I wrote the `basic-scenarios/body_environment.py` python script, that through a simple GUI reads the properties of the system and then plots the curve of the function.
+Explore this analytical solution below: change the body properties, the environment temperature, or the thermal resistance to rebuild the temperature curve instantly.
+
+<div class="scenario-embed" id="simulation-body-environment">
+  <iframe class="scenario-frame" src="{{ '/assets/heat-scenarios/' | relative_url }}?scenario=body-environment" title="Analytical temperature simulator: one body and the environment" loading="lazy" width="100%" height="920"></iframe>
+  <p class="benchmark-open"><a href="{{ '/assets/heat-scenarios/' | relative_url }}?scenario=body-environment" target="_blank" rel="noopener">Open a larger view ↗</a></p>
+</div>
 
 
 
@@ -84,15 +92,17 @@ Starting from this analytical solution I wrote the `basic-scenarios/body_environ
 
 
 
-## Second problem: two bodies in adiabatic environment
+### Second problem: two bodies in adiabatic environment
 
 Let's consider two bodies of mass $m1$ and $m2$, temperature $T_{1, init}$ and $T_{2, init}$, and specific heat $c_1$ and $c_2$, surrounded by an adiabatic environment (no environment transfer of heat happens) and with a thermal resistence $R$ between the two bodies. We would like to discover the rate of change in temperature of the two bodies.
 
-<p align="center">
-<img width="596" alt="image" src="https://github.com/leonardobertolani/temperatures/assets/102794282/bd9a5a47-122d-4e2f-9ba3-1ee9ee8c923a">
-</p>
+<figure class="article-figure article-figure--tile" id="diagram-2">
+  <a class="figure-link" href="{{ '/assets/images/heat-diffusion/02-adiabatic-pair.svg' | relative_url }}" aria-label="Enlarge diagram 2">
+    <img loading="lazy" decoding="async" width="720" height="480" alt="Two bodies exchange heat through resistance R inside an insulated boundary. There is no heat transfer to the environment." src="{{ '/assets/images/heat-diffusion/02-adiabatic-pair.svg' | relative_url }}">
+  </a>
+</figure>
 
-### The equivalence temperature
+#### The equivalence temperature
 
 First of all, it can be usefull to find the equivalence temperature $T_{eq}$, that is the temperature that the two bodies will reach at equilibrium, once all the heat will have been transfered. From this point of view, the equivalence temperature can be found by comparing the total heat exchanges of the two bodies untill they reach that temperature:
 
@@ -109,7 +119,7 @@ $$
 As we can see, the equivalence temperature seems to be the weighted average of the initial bodies temperatures, with the weights expressed by the product $m \cdot c$.
 
 
-### The relation between temperature curves
+#### The relation between temperature curves
 
 Now let's understand what happens to our system after a really short period of time $dt$. The amount of heat that the two bodies will have been transfered equals to
 
@@ -164,7 +174,7 @@ T_2(t) = - \frac{m_1 \cdot c_1}{m_2 \cdot c_2} \cdot (T_1(t) - c) = - \frac{m_1 
 $$
 
 
-### The differential equation
+#### The differential equation
 Finally, let's rewrite the previous equation using the electro-thermal analogy: the amount of heat transfered in a $dt$ interval can be expressed also by the difference in temperature at time $t$ between the body and by the thermal resistence $R$. 
 
 $$
@@ -215,7 +225,12 @@ $$
   T_2(t) = (T_{2, init} - T_{eq}) \cdot e^{-\gamma t} + T_{eq}
 $$
 
-These results have been applied in the `simple-scenarios/body_body.py` script. A simple GUI wraps the graphs and add some input-boxes to let you play around.
+Explore these analytical solutions below. Change the properties and initial temperatures of the two bodies to see how they approach their shared equilibrium.
+
+<div class="scenario-embed" id="simulation-body-body">
+  <iframe class="scenario-frame" src="{{ '/assets/heat-scenarios/' | relative_url }}?scenario=body-body" title="Analytical temperature simulator: two bodies in an adiabatic environment" loading="lazy" width="100%" height="920"></iframe>
+  <p class="benchmark-open"><a href="{{ '/assets/heat-scenarios/' | relative_url }}?scenario=body-body" target="_blank" rel="noopener">Open a larger view ↗</a></p>
+</div>
 
 
 
@@ -224,14 +239,16 @@ These results have been applied in the `simple-scenarios/body_body.py` script. A
 
 
 
-## Third problem: two bodies and the environment
+### Third problem: two bodies and the environment
 
 For the third problem, let's consider two bodies of mass $m1$ and $m2$, temperature $T_{1, init}$ $T_{2, init}$ and specific heat $c_1$ and $c_2$, surrounded by an environment with a steady temperature $T_{env}$. The thermal resistance between the two bodies is $R_{12}$, between the first body and the environment is $R_{1-env}$ and between the second body and the environment is $R_{2-env}$.
 
 
-<p align="center">
-<img width="593" alt="image" src="https://github.com/leonardobertolani/temperatures/assets/102794282/89ffea7a-0797-4346-a3e0-6fd5a4af990f">
-</p>
+<figure class="article-figure article-figure--tile" id="diagram-3">
+  <a class="figure-link" href="{{ '/assets/images/heat-diffusion/03-open-pair.svg' | relative_url }}" aria-label="Enlarge diagram 3">
+    <img loading="lazy" decoding="async" width="720" height="480" alt="Two bodies have a mutual resistance R12 and separate resistances R1-env and R2-env to the same constant-temperature environment." src="{{ '/assets/images/heat-diffusion/03-open-pair.svg' | relative_url }}">
+  </a>
+</figure>
 
 
 From here, it's very difficult to find an analytical solution for the temperature curves of the bodies, since the system is too complicated. Anyway, we can opt for an iterative solution! Like before, let us describe the total heat exchanged by the first body in a small period of time $dt$:
@@ -265,7 +282,12 @@ $$
 T_1(0 + dt) = T_1(dt)= T_1(0) - (\frac{T_1(0) - T_2(0)}{R_{12} \cdot m_1 \cdot c_1} + \frac{T_1(0) - T_{env}}{R_{1-env} \cdot m_1 \cdot c_1}) \cdot dt = T_{1, init} - (\frac{T_{1, init} - T_{2, init}}{R_{12} \cdot m_1 \cdot c_1} + \frac{T_{1, init} - T_{env}}{R_{1-env} \cdot m_1 \cdot c_1}) \cdot dt
 $$
 
-We can see that by iterating this formula over and over again and by storing each time the values computed we are able to build the temperature curve of the body. Obviously, all the temperatures of the system must be updated over time, so to be able to build the $T_1(t)$ temperature curve is necessary to build the $T_2(t)$ temperature curve at the same time. This idea is applied in the `simple-scenario/body_body_environment.py` script, and seems to work pretty well.
+We can see that by iterating this formula over and over again and by storing each time the values computed we are able to build the temperature curve of the body. Obviously, all the temperatures of the system must be updated over time, so to be able to build the $T_1(t)$ temperature curve is necessary to build the $T_2(t)$ temperature curve at the same time. The simulator below evaluates the exact analytical solution of these two coupled linear equations, rather than the iterative approximation. Change the body properties and the three thermal resistances to explore their temperature curves; expand “Model & analytical solution” for the formula.
+
+<div class="scenario-embed" id="simulation-body-body-environment">
+  <iframe class="scenario-frame" src="{{ '/assets/heat-scenarios/' | relative_url }}?scenario=body-body-environment" title="Analytical temperature simulator: two bodies and the environment" loading="lazy" width="100%" height="920"></iframe>
+  <p class="benchmark-open"><a href="{{ '/assets/heat-scenarios/' | relative_url }}?scenario=body-body-environment" target="_blank" rel="noopener">Open a larger view ↗</a></p>
+</div>
 
 
 
@@ -275,8 +297,8 @@ We can see that by iterating this formula over and over again and by storing eac
 
 
 
-## A more general way
-As seen in the previous paragraph about the `simple-scenario/body_body_environment.py` script, it is not always necessary to compute a differential equation to plot the graph of different bodies in the system. By using the iterative approach, the only difficulty is writing the first equation correctly and then plugging it into a script that builds a function step by step. 
+### A more general way
+As seen in the previous scenario, it is not always necessary to compute a differential equation to plot the graph of different bodies in the system. By using the iterative approach, the only difficulty is writing the first equation correctly and then plugging it into a script that builds a function step by step.
 
 For example, suppose we have $N$ bodies with different masses, specific heats, and temperatures, all linked together, surrounded by the same environment. The temperature equation for, let's say, body 1 would simply be:
 
@@ -292,9 +314,11 @@ $$
 
 Not every body should exchange heat with all others. For instance, body 1 may directly exchange heat with bodies 2 and 4 but not with bodies 3 and 5. We can represent these bodies and their thermal interactions through a weighted graph, where each node symbolizes an body and each edge represents a connection between two bodies, with the weight indicating thermal resistances.
 
-<p align="center">
-<img width="595" alt="image" src="https://github.com/leonardobertolani/temperatures/assets/102794282/9807af79-4f09-44a8-87e2-ac215c8cedfc">
-</p>
+<figure class="article-figure article-figure--tile" id="diagram-4">
+  <a class="figure-link" href="{{ '/assets/images/heat-diffusion/04-thermal-network.svg' | relative_url }}" aria-label="Enlarge diagram 4">
+    <img loading="lazy" decoding="async" width="720" height="480" alt="Six uniformly styled bodies connected by seven static thermal-resistance links." src="{{ '/assets/images/heat-diffusion/04-thermal-network.svg' | relative_url }}">
+  </a>
+</figure>
 
 Under this point of view, the temperature at time $t + dt$ of a generic body $i \in N$ with mass $m_i$ and specific heat $c_i$, connected to a set $J \subset N$ of bodies ${1, ..., j}$ and to an environment via thermal resistances
 $R_{ij}$ and $R_{i-env}$, can be calculated as
@@ -306,11 +330,7 @@ $$
 where $\forall i \in N, R_{ii} = 1$ by our convention. As we have seen, the numerical strategy found consists in using the state of the system
 at time $t$ to determine the future situation after a very short time instant $dt$. This concept presents a more **scalable** and **efficient** approach to the problem of finding the temperature variations over time, and represent the generalization of the previous exercises. 
 
-This result is also known in numerical analysis as **Forward Euler Method**, and it is the most basic method for numerically solve a complex differential equation.
-
-From here, we easily realise that the computation to be performed at each layer is nothing more than a scalar product between the vector of temperatures of the bodies at instant $t$ and the vector of thermal resistances of 
-that body with respect to all the others. This is also the reason why the Forward Euler Method is called **explicit** method, because it only needs the knowledge of the system at a certain instant of time $t$ to determine its future evolution.
-Indeed, we observe that
+By working a bit more on this last result, we write that
 
 $$
 T_i(t + dt) = T_i(t) - (\frac{T_i(t) - T_1(t)}{R_{i1} \cdot m_i \cdot c_i} + \frac{T_i(t) - T_2(t)}{R_{i2} \cdot m_i \cdot c_i} + \ldots + \frac{T_i(t) - T_N(t)}{R_{iN} \cdot m_i \cdot c_i} + \frac{T_i(t) - T_{env}}{R_{i-env} \cdot m_i \cdot c_i}) \cdot dt
@@ -324,14 +344,15 @@ $$
 T_i(t + dt) = T_i(t) - \frac{dt}{m_i \cdot c_i} ( \ \sum_{j=1}^{N}\frac{1}{R_{ij}} \cdot (T_i(t) - T_j(t)) + \frac{T_i(t) - T_{env}}{R_{i-env}} \ )
 $$
 
-The summation we have extracted represents a scalar product between the **vector of the normalised temperatures with respect to body $i$** and the **vector
-of the inverse of the thermal resistances with respect to body $i$**. Furthermore, we realise that the heat contribution given by the environment has the same mathematical structure as the other bodies, therefore we can treat the environment as an body to all intents and purposes and include it in the summation, but remembering that its temperature must remain constant,
-and thus imposing that $m_{env} = \infty$ and $c_{env} = \infty$.
+We also observe that the heat contribution given by the environment has (of course) the same mathematical structure as the other bodies, therefore we can treat the environment as a body to all intents and purposes and merge it in the summation
 
 $$
-T_i(t + dt) = T_i(t) - \frac{dt}{m_i \cdot c_i} ( \ \sum_{j=1}^{N}\frac{1}{R_{ij}} \cdot (T_i(t) - T_j(t)) \ ) \quad \quad \quad T_{N} = T_{env}, \quad m_{N} = \infty, \quad c_{N} = \infty
+T_i(t + dt) = T_i(t) - \frac{dt}{m_i \cdot c_i} ( \ \sum_{j=1}^{N}\frac{1}{R_{ij}} \cdot (T_i(t) - T_j(t)) \ ) \quad \quad \quad T_{N} = T_{env}
 $$
 
+If we want to keep the adiabatic hypotesis over the environment, we will need to set $m_N = m_{env} = \infty$ and $c_N = c_{env} = \infty$.
+
+This specific resolution scheme is also known as **Forward Euler Method**, and it is the most basic method for numerically determine the evolution of a complex differential equation. The Forward Euler Method is said to be an **explicit** method, because it only needs the knowledge of the system at a certain instant of time $t$ to determine its future evolution. For this reason, the Euler method can also be numerically **unstable**, especially for stiff equations, meaning that the numerical solution grows very large for equations where the exact solution does not.
 
 
 
@@ -339,86 +360,29 @@ $$
 
 
 
-
-
-# Optimizing the numerical solution
+## Optimizing the numerical solution
 Now that we have established a general criterion for studying the free evolution
-of the system over time, let us try different algorithmic approaches to improve it.
+of the system over time, let us try different mathematical manipulations to speed-up its numerical computation.
 
-As we can see, determining the temperature of a given body at the next instant of time requires us to compute $o(N)$ multiplications, while the evolution of the whole system requires us to compute $o(N^2 \cdot D)$ iterations, where N is the cardinality of the set of bodies and D is the total number of infinitesimal intervals of time that make up our simulation. This algorithm scales quadratically with the number of bodies, and linearly with the duration of the simulation: generally speaking, the Forward Euler approach doesn't seem to scale well, and it is also known for its simplicity and instability.
+As we can see, determining the temperature of a given body at the next instant of time requires us to compute $o(N)$ multiplications, the temperature of the whole set of bodies at the next instant is $o(N^2)$, while the evolution of the whole system requires us to compute $o(N^2 \cdot D)$ iterations, where N is the cardinality of the set of bodies and D is the total number of infinitesimal intervals of time that make up our simulation.
 
-From the algorithmic point of view there's nothing we can do: the algorithm we derived requires the update of the whole set of bodies at each instant of time, and this property seems to belong strictly to its mathematical structure, we cannot simplify this.
+Overall, this algorithm scales quadratically with the number of bodies, and linearly with the duration of the simulation: not really fast.
 
-However, before giving up with the optimization, let's give parallel computation a try, and let's see how much modern computers are able to deal with this kind of complexity. To do this, we will look at three different algorithmic approaches, designed in different parallelization levels: a pure python implementation, a numpy implementation, and a full vectorized implementation.
+From the algorithmic point of view there's nothing we can do: the algorithm we derived requires the update of the whole set of bodies at each instant of time, and this property belongs strictly to its mathematical structure, we cannot simplify this.
 
-
-
-
-## First attempt: plain python
-The first way we can try to implement the equation above is by using the python standard library. This first approach, which we will call plain, is implemented in the `plain_algorithm.py` file, under the `optimization` directory.
-
-The core of the algorithm is this function here
-```python
-def plain_algorithm(T_vector, R_matrix, m_vector, c_vector, environment=True):
-
-    if environment:
-        initial_m[-1] = 100000
-        initial_c[-1] = 100000
-
-    T_time_matrix = [T_vector]
-    current_T_vector = T_vector
-    
-    for _ in range(int(DURATION / DT) - 1):
-        new_T_vector = []
-    
-        for j in range(body_NUMBER):
-            R_dot = [1 / R_matrix[j][n] for n in range(body_NUMBER)]
-            T_dot = [current_T_vector[j] - current_T_vector[n] for n in range(body_NUMBER)]
-            delta_T = DT / (m_vector[j] * c_vector[j]) * dot_product(R_dot, T_dot)
-            new_T_vector.append(current_T_vector[j] - delta_T)
-        
-        current_T_vector = new_T_vector
-        T_time_matrix.append(current_T_vector)
-        
-    return T_time_matrix
-```
-The `plain_algorithm` function takes the initial temperatures, thermal resistances, masses and specific heats of the system and, at each iteration, computes the next temperatures as specified in the formula, storing them in the `T_time_matrix` matrix, which is eventually returned.
-
-By running the script all the properties of the system will be randomly generated, but it is possible to modify some global variables relative to the number of bodies, the duration of the simulation and the $dt$ interval. Also, by flagging the `environment` variable, the last body is transformed into the environment by changing its mass and specific heat to a very high value (theoretically should be $\infty$). Eventually, a png showing the temperature curves of the system over time is returned.
-
-The syntax of this algorithm is simple (and not very clean), but it is enough to understand how our formula can be roughly translated into a program to run a simple simulation script.
+However, it is always possible to rework our solution under a different mathematical form, make efficient use of our computation device, and speed-up as much as possible the iteration scheme. Even if the problem will still be bounded by $o(N^2 \cdot D)$, we can optimize its resolution in such a way that the complexity will only hit for very high number of bodies or long simulation times.
 
 
 
 
 
-## Second attempt: numpy
-Let's now try to include a bit of parallel programming in our algorithm by using a well known python library for vector operations: **numpy**. As before, the numpy approach is implemented in the `numpy_algorithm.py` file, under the `optimization` directory.
+### First attempt: plain numpy
+The first approach we will implement takes the previous formulation and directly rewrites it in a numpy-efficient equivalent. Numpy is a well known python library for matrix and vector operations.
 
-Here is a breakdown of the core numpy algorithm:
-```python
-def numpy_algorithm(T_vector, R_matrix, m_vector, c_vector, environment=True):
-
-    if environment:
-        initial_m[-1] = 100000
-        initial_c[-1] = 100000
-
-    T_time_matrix = np.empty((int(DURATION/DT), body_NUMBER))
-    T_time_matrix[0] = T_vector
-
-    R_inv_dot = 1 / R_matrix[:, :]
-
-    for i in range(1, int(DURATION/DT)):
-        T_dot = (np.resize(T_time_matrix[i - 1], (body_NUMBER, body_NUMBER)).T - T_time_matrix[i - 1]).T
-        dot_result = T_time_matrix[i - 1] - (DT / (m_vector * c_vector)) * (R_inv_dot * T_dot).sum(axis=0)
-        T_time_matrix[i] = dot_result
-
-    return T_time_matrix
-```
-Here the idea is a bit more complex, and it's based on what we saw before: at each instant of time we can imagine to build to matrices, one containing all the thermal resistances of the bodies, sorted by rows, and one containing all the *temperature differences between one temperature and all the others*, like this:
+The idea is to structure the iteration using two matrices, one containing all the *inverted thermal resistances* of the bodies, sorted by rows, and one containing all the *temperature differences between one temperature and all the others*, like this:
 
 $$
-R\_ inv\_ dot = 
+\text{R\_ inv\_ dot} =
 \begin{bmatrix}
 \frac{1}{R_{1-1}} & \frac{1}{R_{1-2}} & ... & \frac{1}{R_{1-N}} \\
 \frac{1}{R_{1-2}} & \frac{1}{R_{2-2}} & ... & \frac{1}{R_{2-N}} \\
@@ -428,7 +392,7 @@ R\_ inv\_ dot =
 $$
 
 $$
-T\_ dot = 
+\text{T\_ dot} =
 \begin{bmatrix}
 T_1 - T_1 & T_2 - T_1 & ... & T_N - T_1 \\
 T_1 - T_2 & T_2 - T_2 & ... & T_N - T_2 \\
@@ -437,23 +401,34 @@ T_1 - T_N & T_2 - T_N & ... & T_N - T_N
 \end{bmatrix}
 $$
 
-In the first line inside the for loop the $T\_ dot$ matrix is built. By multiplying these two matrices together element-wise (what is called an **Hadamard product**) and then summing up by columns, in a "single" shot we compute **the summation in the formula for every body**. Then, by making the element-wise product between this result with the vector of masses and specific heats
+
+The idea is to multiply these two matrices together element-wise (what is called an **Hadamard product**) and then sum up by columns, in order to compute in a "single shot" **the summation in the formula for every body in the simulation**. We will call this resulting vector $s$.
+
+Then, by making the element-wise product between this result and the vector of masses and specific heats
 
 $$
-\begin{bmatrix}
+\mu = \begin{bmatrix}
 \frac{dt}{m_1 \cdot c_1} & \frac{dt}{m_2 \cdot c_2} & ... & \frac{dt}{m_N \cdot c_N}
-\end{bmatrix}
+\end{bmatrix}^T
 $$
 
-and subtracting it from the vector of the current temperatures `T_time_matrix[i - 1]` (done in the second line inside the loop), we finally manage to compute the next iteration step. The third row is to store this new iteration in the `T_time_matrix`.
+and subtracting it from the vector of the current temperatures $\text{T\_vector}$, we finally manage to compute the next iteration step. Here is the simple numpy translation of this approach
+```python
+s = (R_inv_dot * T_dot).sum(axis=0)
 
+mu = DT / (m_vector * c_vector)
 
-## Third attempt: vectorized algorithm
+T_vector[i] = T_vector[i - 1] - mu * s
+```
+
+Note that, for this algorithm to be successfully applied, $\text{T\_dot}$ has to be recomputed at each step, as well as $s$. Instead, $\mu$ can be only computed once at the beginning of the simulation and reused over and over again. While this approach could already be efficient, because it leverages the parallel capabilities of Numpy, we can do better.
+
+### Second attempt: full matrix-vector form
 The previous formulation we found could be furtherly improved by transforming it in a more vectorized one.
 To do so, let's work a bit on the summation to extract the term $T_i(t)$
 
 $$
-T_i(t + dt) = T_i(t) - \frac{dt}{m_i \cdot c_i} ( \ \sum_{j=1}^{N}\frac{T_i(t)}{R_{ij}} - \sum_{j=1}^{N + 1}\frac{T_j(t)}{R_{ij}} \ )
+T_i(t + dt) = T_i(t) - \frac{dt}{m_i \cdot c_i} ( \ \sum_{j=1}^{N}\frac{T_i(t)}{R_{ij}} - \sum_{j=1}^{N}\frac{T_j(t)}{R_{ij}} \ )
 $$
 
 $$
@@ -489,65 +464,72 @@ $$
 \vec{T}(t + dt) = \vec{T}(t) \odot (\vec{1} - M_R \cdot \vec{1}) + M_R \cdot \vec{T}(t)
 $$
 
-Where $\odot$ represents the **Hadamard product** (or element-wise product) of matrices. This final and compact formulation makes great use of vectors and matrices, and for this reason is highly parallelizable. It is implemented in the `vectorized_algorithm.py` file, under the `optimization` directory, and here is its core function:
+
+Where $\odot$ represents the **Hadamard product** (or element-wise product) of matrices. This formulation can furtherly be enhanced by employing a property of the Hadamard product, which states
+
+$$
+\vec{u} \odot \vec{v} = \vec{u}^T \cdot \text{diag}(\vec{v}) = \text{diag}(\vec{u}) \cdot \vec{v}
+$$
+
+And in this case
+
+$$
+\begin{align*}
+\vec{T}(t + dt) =  \vec{T}(t)^T \cdot \text{diag}(\vec{1} - M_R \cdot \vec{1}) + M_R \cdot \vec{T}(t) \\
+=  \text{diag}(\vec{1} - M_R \cdot \vec{1}) \cdot \vec{T}(t) + M_R \cdot \vec{T}(t)
+\end{align*}
+$$
+
+Now, we leverage the distributive property of the matrix-vector multiplication, and write
+
+$$
+\vec{T}(t + dt) =  (\text{diag}(\vec{1} - M_R \cdot \vec{1}) + M_R ) \cdot \vec{T}(t)
+$$
+
+and, by setting $\Gamma = \text{diag}(\vec{1} - M_R \cdot \vec{1}) + M_R$, we obtain this last iteration scheme
+
+$$
+\vec{T}(t + dt) =  \Gamma \cdot \vec{T}(t)
+$$
+
+This final formulation is very powerful, since it reduces the whole system evolution to a single matrix-vector multiplication. Moreover, such matrix is **static**, meaning that it can be computed a-priori, stored in a computation device, and streamed in the vector multiplication over and over again to compute each instant of time.
+
+In Numpy, $\Gamma$ can be computed as
 
 ```python
-def vectorized_algorithm(T_vector, R_matrix, m_vector, c_vector, environment=True):
+mu = DT / (m_vector * c_vector)
+M_R = (1.0 / R_matrix) * mu[:, np.newaxis]
+Gamma = np.diag(1.0 - M_R.sum(axis=1)) + M_R
+```
 
-    if environment:
-        m_vector[-1] = 100000
-        c_vector[-1] = 100000
+And the iteration scheme becomes
 
-    scaling_vector = DT / (m_vector * c_vector)
-    Mr = (1 / R_matrix) * scaling_vector[:, np.newaxis]
-            
-    T_time_matrix = np.empty((int(DURATION/DT), body_NUMBER))
-    T_time_matrix[0] = T_vector
-
-    for i in range(1, int(DURATION/DT)):
-        T_time_matrix[i] = T_time_matrix[i-1]*(1 - Mr @ np.ones(body_NUMBER)) + (Mr @ T_time_matrix[i-1])
-
-    return T_time_matrix
+```python
+T_vector[i] = Gamma @ T_vector[i - 1]
 ```
 
 
 
-## Algorithm comparisons
-Let us now put the described algorithms to the test, and observe their weaknesses and strengths. In the file `benchmark.py` is a simple script comparing the three approaches, which tests them by looking at the execution time they take as the number of bodies or the size of the simulation interval increases. The output of the script should look something like this
+### Algorithm comparisons
+The two surfaces below compare the **plain NumPy** and **fully vectorial** implementations on a $5 \times 5$ grid: 64–1,024 objects and 100–2,000 seconds of simulated time, with a fixed step $dt = 1$ second. Each point is the median of five runs using identical initial conditions; timings include matrix preparation and storage of the complete temperature history. The fully vectorial method precomputes $\Gamma$ once and applies $\Gamma \cdot \vec{T}$ at every step. Both implementations were checked to produce matching temperatures across the entire grid.
 
-<p align="center">
-<img width="800" height="640" alt="benchmark_3alg" src="https://github.com/user-attachments/assets/c13661c8-42cd-4aac-8cbd-fa994e713587" />
-</p>
+Rotate the chart to compare the surfaces, switch to the logarithmic scale to see smaller runtimes, or use the sliders to inspect a measured combination. The surfaces interpolate between samples.
 
-The reported result is interesting: the plain python script presents a quadratic curve with respect to the number of bodies, and a linear growth with respect to the duration of the interval, as we had already predicted. However, this is not the case for the other two algorithms: although they show a linear growth with respect to the duration of the interval, the complexity with respect to the number of bodies seems to be very close to $o(1)$: this is where the parallel calculation has its way.
+<div class="benchmark-embed">
+  <iframe class="benchmark-frame" src="{{ '/assets/heat-benchmark/' | relative_url }}" title="Interactive 3D comparison of NumPy and fully vectorial heat-diffusion runtimes" loading="lazy" width="100%" height="1000"></iframe>
+  <p class="benchmark-open"><a href="{{ '/assets/heat-benchmark/' | relative_url }}" target="_blank" rel="noopener">Open a larger view ↗</a> · <a href="{{ '/assets/heat-benchmark/results.csv' | relative_url }}" download>Download measurements</a></p>
+</div>
 
-We can then think of comparing the two parallel algorithms, and this is what comes out:
+These results has been run on my personal laptop on CPU. This test doesn't take into account many conditions, as for example the specific architecture of the machine, and is in fact far from a universal performance guarantee.
 
-<p align="center">
-<img width="800" height="640" alt="benchmark_2alg" src="https://github.com/user-attachments/assets/e23372f9-5a12-40b2-b20d-bce9b96f51c9" />
-</p>
-
-Also in this case we see the quadratic behaviour emerging from the numpy algorithm. Note that, even though the number of bodies quadrupled in this scenario, the vectorized approach remained unaffected.
-
-Now let's try to push the vectorized algorithm to its limits and see how much parallel execution can bear. Let's force the simulation with up to $2000$ bodies (more than three times than before), and with up to 1 million seconds of duration. The trend is the following:
-
-<p align="center">
-<img width="800" height="640" alt="benchmark_1alg" src="https://github.com/user-attachments/assets/dccc8332-d430-4b02-8898-e02d582fba8e" />
-</p>
-
-This third set of graphs shows us that the quadratic dependence on the number of bodies is still present in our code, and it couldn't be otherwise, since the mathematical structure we have chosen implies a quadratic dependence. The most important information we can derive from the graph is the better degree of optimization of the third approach compared to all the others, reminding us of the importance of using specific libraries such as numpy for computations where performance is crucial, rather than reinventing the wheel with our own code.
+However, the huge speed-up we observe in the fully matrix-vector form is an indication of how much the solution formulation can be impactful on the actual performance of our algorithm. Even if the algorithm hasn't changed (and the complexity is still $o(N^2 \cdot D)$), a bit of mathematical work is capable of overcoming major performance limitations.
 
 
 
-
-
-
-
-
-# A sprinkle of LSD
+## A sprinkle of LSD
 Now that we have discussed the algorithmic approach and we have accelerated it through matrix computation, it is time to delve into the main mathematical outcomes of this work and see how deep the rabbit hole goes. 
 
-## Derivation of the heat diffusion differential equation
+### Derivation of the heat diffusion differential equation
 Let's take again the final general formulation we came up with:
 
 $$
@@ -556,22 +538,28 @@ $$
 
 Our intention is to derive from this equation the *heat diffusion equation*, a well known **partial differential equation** that describes how the heat flows into bodies. To this purpose, we need to arrange our graph model in such a way that it can be described by a cartesian space. We will therefor consider the following three-dimensional structure below, where each node represents an *infinitesimal* part of the space, and use it to represent the structure of a general body $\Omega$.
 
-<p align="center">
-<img width="600" height="400" alt="image" src="https://github.com/user-attachments/assets/ffdd8487-3232-461c-8b08-4eed6d66766a" />
-</p>
+<figure class="article-figure article-figure--tile" id="diagram-5">
+  <a class="figure-link" href="{{ '/assets/images/heat-diffusion/05-spatial-lattice.svg' | relative_url }}" aria-label="Enlarge diagram 5">
+    <img loading="lazy" decoding="async" width="720" height="480" alt="A five-by-five-by-five cubic lattice in an orthographic isometric projection. The three grid axes meet at 120 degrees, and fully coloured foreground nodes cover points on the same viewing diagonal." src="{{ '/assets/images/heat-diffusion/05-spatial-lattice.svg' | relative_url }}">
+  </a>
+</figure>
   
 Let's now take just a small piece of it, and add some cartesian references: our intention is to convert our discrete graph-based representation into a continuous cartesian-based one, and to do this we must state that each node dists from another an infinitesimal distance $dx$ on the x-axis and $dy$ on the y-axis.
 
-<p align="center">
-<img width="600" height="400" alt="image" src="https://github.com/user-attachments/assets/d4c48be5-615b-4975-b07d-daf8ffcfdaa4" />
-</p>
+<figure class="article-figure article-figure--tile" id="diagram-6">
+  <a class="figure-link" href="{{ '/assets/images/heat-diffusion/06-six-neighbours.svg' | relative_url }}" aria-label="Enlarge diagram 6">
+    <img loading="lazy" decoding="async" width="720" height="480" alt="The central temperature T(t,x,y,z) connects to neighbours at plus and minus dx, dy and dz along the three Cartesian axes." src="{{ '/assets/images/heat-diffusion/06-six-neighbours.svg' | relative_url }}">
+  </a>
+</figure>
   
 Also, an alternative representation of this structure is the one that follows, in which the nodes are put inside boxes of dimensions $dx \cdot dy \cdot dz$:
 
 
-<p align="center">
-<img width="600" height="400" alt="image" src="https://github.com/user-attachments/assets/3532bfd5-f983-4a3b-911e-593b29a641a2" />
-</p>
+<figure class="article-figure article-figure--tile" id="diagram-7">
+  <a class="figure-link" href="{{ '/assets/images/heat-diffusion/07-volume-elements.svg' | relative_url }}" aria-label="Enlarge diagram 7">
+    <img loading="lazy" decoding="async" width="720" height="480" alt="Seven adjacent volume elements with a node at each centre. A highlighted central cell and dimensions dx, dy and dz show how the spatial graph represents finite volumes." src="{{ '/assets/images/heat-diffusion/07-volume-elements.svg' | relative_url }}">
+  </a>
+</figure>
 
 What we are basically doing is giving a precise structure to our graph, making the nodes reflect the position of each point of $\mathbb{R}^3$. Since now the graph lives in a structured space it is necessary to also add spacial references to the function we've been using: $T(t) \rightarrow T(t, x, y, z)$. Also note that the mass and specific heat are now relative to a single body. Based on this structure, the equation above can be rewritten as:
 
@@ -613,19 +601,10 @@ Which represents the **heat diffusion differential equation** in $\mathbb{R}^3$ 
 
 
 
-# Web Demo
-The results of these studies are presented in a simple [web application](/heat-diffusion-demo/). This interactive demo allows users to manipulate the heat distribution and its properties through various sliders and buttons.
-
-The geometry chosen for the simulation is a **planar surface**, which is ideal for its ease of setup and animation. As explained in the "Derivation of the Heat Diffusion Differential Equation" section, each point on the plane corresponds to a node in a graph. This approach transforms discrete properties like thermal resistance and mass into continuous ones: thermal conductivity ($$\lambda$$) and density ($$\rho$$). For simplicity, every node (or cell) in the simulation is assigned the same values for $$\lambda$$, specific heat capacity $$c$$, and $$\rho$$.
-
-The algorithm applied is a slight variation of the plain python one, adapted for Javascript. The computation of the next steps is done instant after instant, so the evolution of the system is not predetermined. Moreover, since the numerical method applied is **Forward Euler**, the simulation might be **instable** for certain values of $$\lambda$$, $$c$$ and $$\rho$$.
-
-# Interactive 3D simulator
+## Interactive 3D simulator
 
 [**Launch Thermal Flow Lab →**]({{ "/thermal-flow-lab/" | relative_url }})
 
 This three-dimensional application extends the study to solid objects using the optimized vector formula above. Choose a pipe, piston and cylinder, block, flanged pipe, finned heat sink, or stepped shaft—or load your own closed STL, OBJ, GLB, or embedded glTF model. Click to apply hot or cold spots, then orbit and zoom while temperatures evolve.
 
 The object is discretized into a network of volume cells. A sparse evaluation of the vector update computes heat exchange between neighboring cells, with automatically bounded Forward Euler time steps. Material properties, physical dimensions, resolution, and optional convection to ambient air are adjustable. The information button beside the color scale shows live temperature statistics and history.
-
-The simulation runs in your browser, and imported models stay on your device. It is an exploratory conduction model: grid resolution affects thin walls and small gaps, and it does not simulate fluid flow, radiation, piston motion, or contact resistance. The original [two-dimensional demo]({{ "/heat-diffusion-demo/" | relative_url }}) remains available.
