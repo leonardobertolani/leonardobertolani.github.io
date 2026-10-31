@@ -1,5 +1,6 @@
-// Sparse evaluation of Leonardo's vector update. All temperatures in a step
-// read the same old vector. Conductance G = 1/R; capacity C = m*c.
+// Sparse matrix-vector evaluation of the precomputed Forward Euler operator Γ.
+// Conductance G = 1/R; heat capacity C = m*c. The final matrix row/column is
+// a fixed ambient-temperature node, which keeps convection in the same ΓT step.
 export class ThermalSolver {
   constructor({ capacity, edges, boundary, initial = 20, ambient = 20 }) {
     this.capacity = Float64Array.from(capacity);
@@ -7,31 +8,109 @@ export class ThermalSolver {
     this.edges = edges;
     this.boundary = Float64Array.from(boundary ?? capacity.map(() => 0));
     this.ambient = ambient;
-    this.T = new Float64Array(capacity.length).fill(initial);
-    this.next = new Float64Array(capacity.length);
     this.sources = new Map();
     this.time = 0;
-    const row = this.boundary.slice();
-    for (const [i, j, g] of edges) { row[i] += g; row[j] += g; }
+
+    const rowConductance = this.boundary.slice();
+    for (const [i, j, g] of edges) { rowConductance[i] += g; rowConductance[j] += g; }
     let maxRate = 0;
-    for (let i = 0; i < row.length; i++) maxRate = Math.max(maxRate, row[i] / this.capacity[i]);
+    for (let i = 0; i < rowConductance.length; i++) maxRate = Math.max(maxRate, rowConductance[i] / this.capacity[i]);
     // Sufficient positivity bound, stricter than the spectral stability limit.
     this.dtMax = maxRate > 0 ? 0.9 / maxRate : Infinity;
+
+    const n = this.capacity.length;
+    this.state = new Float64Array(n + 1);
+    this.nextState = new Float64Array(n + 1);
+    this.state.fill(initial, 0, n);
+    this.state[n] = ambient;
+    this.nextState[n] = ambient;
+    this.T = this.state.subarray(0, n);
+    this.next = this.nextState.subarray(0, n);
+
+    const rows = Array.from({ length: n + 1 }, (_, i) => [[i, i === n ? 0 : -rowConductance[i] / this.capacity[i], 1]]);
+    for (const [i, j, g] of edges) {
+      rows[i].push([j, g / this.capacity[i], 0]);
+      rows[j].push([i, g / this.capacity[j], 0]);
+    }
+    for (let i = 0; i < n; i++) if (this.boundary[i] !== 0) rows[i].push([n, this.boundary[i] / this.capacity[i], 0]);
+
+    const nonzeros = rows.reduce((sum, row) => sum + row.length, 0);
+    this._rowOffsets = new Uint32Array(n + 2);
+    this._columnIndices = new Uint32Array(nonzeros);
+    this._rates = new Float64Array(nonzeros);
+    this._identity = new Uint8Array(nonzeros);
+    let p = 0;
+    for (let i = 0; i < rows.length; i++) {
+      this._rowOffsets[i] = p;
+      rows[i].sort((a, b) => a[0] - b[0]);
+      for (const [column, rate, identity] of rows[i]) {
+        this._columnIndices[p] = column;
+        this._rates[p] = rate;
+        this._identity[p] = identity;
+        p++;
+      }
+    }
+    this._rowOffsets[n + 1] = p;
+
+    // The common stable-step Γ is assembled once and reused for every full step.
+    // An isolated system has Γ = I for every finite dt, so dt = 0 is sufficient.
+    this.gamma = this._makeGamma(Number.isFinite(this.dtMax) ? this.dtMax : 0);
+    this._partialGamma = this._makeGamma(0);
   }
-  reset(initial) { this.T.fill(initial); this.sources.clear(); this.time = 0; }
+
+  _makeGamma(dt) {
+    const values = new Float64Array(this._rates.length);
+    this._fillGamma(dt, values);
+    return {
+      dt,
+      size: this.capacity.length + 1,
+      rowOffsets: this._rowOffsets,
+      columnIndices: this._columnIndices,
+      values
+    };
+  }
+
+  _fillGamma(dt, values) {
+    for (let p = 0; p < values.length; p++) values[p] = this._identity[p] + dt * this._rates[p];
+  }
+
+  _gammaFor(dt) {
+    if (!Number.isFinite(this.dtMax)) return this.gamma;
+    const tolerance = 1e-12 * Math.max(1, this.dtMax);
+    if (Math.abs(dt - this.gamma.dt) <= tolerance) return this.gamma;
+    this._partialGamma.dt = dt;
+    this._fillGamma(dt, this._partialGamma.values);
+    return this._partialGamma;
+  }
+
+  reset(initial) {
+    this.state.fill(initial, 0, this.capacity.length);
+    this.state[this.capacity.length] = this.ambient;
+    this.sources.clear();
+    this.time = 0;
+  }
+
   step(dt) {
     if (!(dt > 0) || !Number.isFinite(dt) || dt > this.dtMax * (1 + 1e-12)) throw Error('Unsafe time step.');
-    const { T, next, capacity, boundary } = this;
-    for (const [i, temperature] of this.sources) T[i] = temperature;
-    for (let i = 0; i < T.length; i++) next[i] = T[i] + dt * boundary[i] * (this.ambient - T[i]) / capacity[i];
-    for (const [i, j, g] of this.edges) {
-      const q = dt * g * (T[j] - T[i]);
-      next[i] += q / capacity[i];
-      next[j] -= q / capacity[j];
+    const gamma = this._gammaFor(dt);
+    const { rowOffsets, columnIndices, values } = gamma;
+    const n = this.capacity.length;
+    for (const [i, temperature] of this.sources) this.state[i] = temperature;
+    this.state[n] = this.ambient;
+
+    for (let row = 0; row < gamma.size; row++) {
+      let value = 0;
+      for (let p = rowOffsets[row]; p < rowOffsets[row + 1]; p++) value += values[p] * this.state[columnIndices[p]];
+      this.nextState[row] = value;
     }
-    for (const [i, temperature] of this.sources) next[i] = temperature;
-    this.T = next; this.next = T; this.time += dt;
+    for (const [i, temperature] of this.sources) this.nextState[i] = temperature;
+
+    [this.state, this.nextState] = [this.nextState, this.state];
+    this.T = this.state.subarray(0, n);
+    this.next = this.nextState.subarray(0, n);
+    this.time += dt;
   }
+
   advance(duration, maxSteps = 250) {
     let remaining = duration, steps = 0;
     while (remaining > 1e-10 && steps < maxSteps) {
@@ -40,6 +119,7 @@ export class ThermalSolver {
     }
     return duration - remaining;
   }
+
   stats() {
     let min = Infinity, max = -Infinity, energy = 0, capacity = 0;
     for (let i = 0; i < this.T.length; i++) {

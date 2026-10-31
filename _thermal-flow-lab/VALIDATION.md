@@ -1,12 +1,13 @@
 # Validation record
 
-Recorded on 2026-10-28. These are software checks, not certification of physical predictions.
+Recorded on 2026-10-31. These are software checks, not certification of physical predictions.
 
 ## Automated checks
 
-`npm test`: **15 passing tests**.
+`npm test`: **17 passing tests**.
 
-- Sparse update versus the original dense vector formula, including unequal heat capacities.
+- Precomputed sparse Γ update versus dense matrix–vector multiplication, including unequal heat capacities.
+- Augmented Γ structure for fixed-temperature ambient convection, including normalized matrix rows.
 - Energy conservation and capacity-weighted equilibrium for an insulated two-body system.
 - Comparison to the analytical Newton-cooling exponential, within the specified Euler error tolerance.
 - Stable-step maximum/minimum bounds on a nonuniform network and rejection of unsafe steps.
@@ -40,7 +41,7 @@ This version has not undergone a formal spatial/temporal convergence study on a 
 
 ## Information panel and engineering samples update
 
-- Full suite: **16 passing tests**, run with `node --test --test-isolation=none tests/*.test.js` in the sandbox; production build succeeds.
+- Full suite: **17 passing tests**; production build succeeds.
 - The existing built-in geometry/conservation check now covers all six samples. A new regression check confirms flanged pipe, heat sink and stepped shaft remain one connected thermal island at 24, 36 and 48 resolution.
 - Browser checks: all three added samples rendered successfully; at balanced resolution the flanged pipe has 10,380 cells, heat sink 9,860, and stepped shaft 3,590.
 - The information button beside the color scale opens the new dialog. Minimum, average, maximum, live chart and simulated time are visible there, and the previous bottom readout bar is removed.

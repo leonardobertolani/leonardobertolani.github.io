@@ -6,12 +6,30 @@ import { sampleModel } from '../src/models.js';
 import * as THREE from 'three';
 const close=(a,b,tol=1e-9)=>assert.ok(Math.abs(a-b)<tol,`${a} != ${b}`);
 
-test('sparse update equals the original dense vector formula with unequal capacities',()=>{
-  const capacity=[2,5,9],edges=[[0,1,.7],[1,2,1.2],[0,2,.1]],T=[180,10,45],dt=.03;
+function multiply(matrix, vector) {
+  const out=new Float64Array(matrix.size);
+  for(let row=0;row<matrix.size;row++) for(let p=matrix.rowOffsets[row];p<matrix.rowOffsets[row+1];p++) out[row]+=matrix.values[p]*vector[matrix.columnIndices[p]];
+  return out;
+}
+
+test('precomputed sparse Gamma equals a dense matrix-vector update with unequal capacities',()=>{
+  const capacity=[2,5,9],edges=[[0,1,.7],[1,2,1.2],[0,2,.1]],T=[180,10,45];
   const s=new ThermalSolver({capacity,edges});s.T.set(T);
-  const G=[[0,.7,.1],[.7,0,1.2],[.1,1.2,0]];
-  const expected=T.map((t,i)=>t*(1-G[i].reduce((sum,g)=>sum+dt*g/capacity[i],0))+G[i].reduce((sum,g,j)=>sum+dt*g/capacity[i]*T[j],0));
-  s.step(dt);expected.forEach((t,i)=>close(s.T[i],t));
+  const gamma=s.gamma,expected=multiply(gamma,[...T,s.ambient]);
+  s.step(s.dtMax);
+  assert.equal(s.gamma,gamma);
+  expected.slice(0,T.length).forEach((t,i)=>close(s.T[i],t));
+});
+
+test('Gamma augments the temperature vector with a fixed ambient node',()=>{
+  const s=new ThermalSolver({capacity:[10,4],edges:[[0,1,3]],boundary:[2,1],ambient:15});
+  const gamma=s.gamma;
+  const dense=Array.from({length:gamma.size},()=>Array(gamma.size).fill(0));
+  for(let i=0;i<gamma.size;i++) for(let p=gamma.rowOffsets[i];p<gamma.rowOffsets[i+1];p++) dense[i][gamma.columnIndices[p]]+=gamma.values[p];
+  close(dense[0][0],1-s.dtMax*5/10);close(dense[0][1],s.dtMax*3/10);close(dense[0][2],s.dtMax*2/10);
+  close(dense[1][0],s.dtMax*3/4);close(dense[1][1],1-s.dtMax*4/4);close(dense[1][2],s.dtMax/4);
+  assert.deepEqual(dense[2],[0,0,1]);
+  for(const row of dense)close(row.reduce((a,b)=>a+b,0),1);
 });
 test('isolated unequal-capacity pair conserves energy and converges to weighted equilibrium',()=>{
   const s=new ThermalSolver({capacity:[2,7],edges:[[0,1,1]]});s.T.set([100,10]);

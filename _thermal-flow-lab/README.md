@@ -1,8 +1,6 @@
 # Thermal Flow Lab
 
-A local, interactive 3D heat-diffusion application based on Leonardo's thermodynamics study, especially `optimization/vectorized_algorithm.py` and the README's derivation of the three-dimensional heat equation.
-
-The original `~/Desktop/temperatures` project is a read-only reference. This app is independent and does not run or modify those Python scripts.
+A local, interactive 3D heat-diffusion application based on Leonardo's thermodynamics study and its fully vectorized Γ iteration.
 
 ## Start here
 
@@ -54,24 +52,25 @@ Reloading the page starts a new experiment. There is no persistent project/sessi
 
 ## How your equation is used
 
-Your optimized formula is
+The fully vectorized update is
 
 ```text
-T_next = T ⊙ (1 − M_R · 1) + M_R · T
-(M_R)_ij = Δt / (m_i c_i R_ij)
+T_next = Γ T
+Γ = diag(1 − M_R · 1) + M_R
+(M_R)_ij = Δt / (C_i R_ij)
 ```
 
-Let C_i = m_i c_i and G_ij = 1/R_ij. The equivalent component form is
+Let C_i = m_i c_i and G_ij = 1/R_ij. For a fixed step Δt, Γ is static: it can be assembled once and reused at every iteration. Its equivalent component form is
 
 ```text
 T_i,next = T_i + Δt/C_i · Σ_j G_ij (T_j − T_i)
 ```
 
-This is the update implemented in `src/solver.js`. It is not an animation that only resembles diffusion: every displayed time step comes from this thermal network.
+This is the update implemented in `src/solver.js`. It is not an animation that only resembles diffusion: every displayed time step is a Γ matrix–vector multiplication in this thermal network.
 
-The original script uses a dense NumPy matrix. The app stores only connected cell pairs. For each edge it computes Q_ij = Δt G_ij(T_j − T_i), adds Q_ij/C_i to one cell and subtracts Q_ij/C_j from the other. All edge calculations read the old temperature vector and write to a separate next vector. This preserves simultaneous Forward Euler updates; it does not accidentally use already-updated neighbor values.
+The voxel grid gives each cell at most six conducting neighbors, so nearly all entries of the dense Γ matrix would be zero. The app assembles only its nonzero entries in compressed sparse row form. Each full stable step reuses the same stored Γ and streams its rows through the old temperature vector into a separate next vector. A shorter remainder step uses the same sparsity structure with coefficients scaled to that Δt.
 
-The algebra matches your vector formula, but this is a sparse JavaScript implementation, not NumPy or a GPU matrix multiplication. With at most six neighbors per cell, storage and work per step are O(N + E), approximately O(N), rather than the dense O(N²). The two temperature vectors use Float64Array. Visualization snapshots use Float32Array; exports use the solver's Float64 values.
+This is a sparse JavaScript matrix multiplication rather than a dense NumPy or GPU multiplication. With at most six neighbors per cell, storage and work per step are O(N + E), approximately O(N), rather than the dense O(N²). Matrix indices, coefficients and the two temperature vectors use typed arrays. Visualization snapshots use Float32Array; exports and the solver use Float64 values.
 
 For a cubic cell of physical width Δx:
 
@@ -85,7 +84,7 @@ R_neighbor = 1/(k Δx)
 
 The interior update therefore becomes the familiar six-neighbor approximation to ∂T/∂t = [k/(ρc)]∇²T. This follows the same discretization you describe in the final part of your README.
 
-For each exposed face, G_ambient = h Δx². The ambient term is Δt G_ambient(T_ambient − T_i)/C_i. Instead of assigning the environment a very large mass, as in your script, the app holds ambient temperature exactly fixed. Thermostat cells are also clamped exactly before and after each step.
+For each exposed face, G_ambient = h Δx². The ambient term is Δt G_ambient(T_ambient − T_i)/C_i. The solver appends one fixed ambient node to the temperature vector and one identity row to Γ. The solid-to-ambient coefficients then live in the same matrix as the solid-to-solid coefficients. Thermostat cells are clamped exactly before and after each multiplication.
 
 Celsius is valid here because only temperature differences enter the conduction and convection equations. A one-degree Celsius difference equals a one-kelvin difference. Adding radiation would require absolute temperatures in kelvin and a different model.
 
@@ -109,7 +108,7 @@ In an insulated network without held sources, symmetric edge conductance makes t
 | Three.js | WebGL rendering, camera, OrbitControls, raycast selection, STL/OBJ/glTF loaders |
 | three-mesh-bvh | Spatial acceleration for the many mesh-ray intersections used to fill the object with cells |
 | Web Worker | Builds the thermal domain and advances the solver away from the rendering/UI thread |
-| Typed arrays | Compact numerical vectors and efficient messages to the renderer |
+| Typed arrays | Compact sparse Γ storage, numerical vectors and efficient messages to the renderer |
 | Vite | Development server, dependency bundling, worker bundling and production build |
 | Node's built-in test runner | Numerical, geometry and import regression checks |
 
@@ -122,7 +121,7 @@ Normalize assembly transforms and overall dimensions
                 ↓
 Worker: validate closed edges → raycast volume → occupied cells
                 ↓
-Sparse cell-neighbor graph + physical heat capacities/conductances
+Sparse Γ + physical heat capacities/conductances
                 ↓
 Stable Euler updates in the worker
                 ↓
@@ -145,7 +144,7 @@ This is a tested exploratory simulator, not a mesh-converged or experimentally v
 
 ## Files and development
 
-- `src/solver.js`: sparse thermal update, stability bound, energy statistics.
+- `src/solver.js`: sparse Γ construction and multiplication, stability bound, energy statistics.
 - `src/voxelize.js`: closure checks, BVH ray filling, face adjacency, thermal island counting.
 - `src/worker.js`: worker messages, timers, heat brushes, thermostats and exports.
 - `src/models.js`: procedural models and local-file loading/normalization.
@@ -166,8 +165,7 @@ The built `dist/` directory can also be served by a local static server, for exa
 
 ## References
 
-- Your original `../temperatures/README.md`, particularly “Third attempt: vectorized algorithm” and “Derivation of the heat diffusion differential equation”.
-- Your original `../temperatures/optimization/vectorized_algorithm.py`.
+- [On Heat Diffusion Equations](https://leonardobertolani.github.io/2026/07/24/on-heat-diffusion-equations.html), particularly “Second attempt: full matrix-vector form” and the derivation of the three-dimensional heat equation.
 - [Three.js installation guide](https://threejs.org/manual/en/installation.html), [OrbitControls](https://threejs.org/docs/pages/OrbitControls.html), [STLLoader](https://threejs.org/docs/pages/STLLoader.html), [GLTFLoader](https://threejs.org/docs/pages/GLTFLoader.html).
 - [three-mesh-bvh repository](https://github.com/gkjohnson/three-mesh-bvh).
 - [Vite guide](https://vite.dev/guide/).
