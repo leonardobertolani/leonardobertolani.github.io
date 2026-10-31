@@ -32,12 +32,6 @@ bundle exec jekyll serve
 
 ## Thermal Flow Lab
 
-The 3D simulator is served at `/thermal-flow-lab/` and linked from the heat-diffusion article. The existing 2D demo remains at `/heat-diffusion-demo/`.
+The 3D simulator is maintained in the separate [`thermal-flow-lab`](https://github.com/leonardobertolani/thermal-flow-lab) repository and published at <https://leonardobertolani.github.io/thermal-flow-lab/>. The heat-diffusion article links directly to that project site. The existing 2D demo remains at `/heat-diffusion-demo/`.
 
-`thermal-flow-lab/` contains the production files served by GitHub Pages. `_thermal-flow-lab/` contains the editable application source; Jekyll excludes underscore-prefixed directories from the generated site. To rebuild after editing the source:
-
-```sh
-./scripts/build-thermal-flow.sh
-```
-
-This uses Node.js 22.12+ or a supported newer LTS, installs locked npm dependencies, and rebuilds the static bundle with relative asset paths so its Web Worker works below the site's subdirectory. Commit both the source changes and generated `thermal-flow-lab/` files. GitHub Pages continues to use the existing Jekyll publishing setup; no server backend is required.
+Every push to the lab repository's `main` branch runs its tests, builds the Vite application, and deploys the result through GitHub Actions. No lab source or generated bundle needs to be copied into this website repository.

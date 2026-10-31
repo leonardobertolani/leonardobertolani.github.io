@@ -7,7 +7,7 @@ post_style: heat-diffusion
 
 In this post I'd like to show some results I obtained from my heat diffusion brief study. In particular, starting from basic thermodynamical laws and some simple assumption about the physical bodies involved, I've shown how to construct a method to numerically determine the evolution of the bodies temperature over time, when these are linked together and they exchange heat one with the other. Then, I've implemented this method using different algorithm with different parallelisation levels, and I've compared their performance. In the final part of this post, I've also shown how the numerical formulation I've found can be used to derive the heat diffusion differential equation for a generic body. Hope it could be interesting :)
 
-> **Try the equations in 3D:** [Open Thermal Flow Lab]({{ "/thermal-flow-lab/" | relative_url }}) to place hot spots on engineering objects and watch heat diffuse through their volume.
+> **Try the equations in 3D:** [Open Thermal Flow Lab](https://leonardobertolani.github.io/thermal-flow-lab/) to place hot spots on engineering objects and watch heat diffuse through their volume.
 
 <nav class="article-toc" aria-labelledby="table-of-contents" markdown="1">
 
@@ -603,7 +603,7 @@ Which represents the **heat diffusion differential equation** in $\mathbb{R}^3$ 
 
 ## Interactive 3D simulator
 
-[**Launch Thermal Flow Lab →**]({{ "/thermal-flow-lab/" | relative_url }})
+[**Launch Thermal Flow Lab →**](https://leonardobertolani.github.io/thermal-flow-lab/)
 
 This three-dimensional application extends the study to solid objects using the optimized vector formula above. Choose a pipe, piston and cylinder, block, flanged pipe, finned heat sink, or stepped shaft—or load your own closed STL, OBJ, GLB, or embedded glTF model. Click to apply hot or cold spots, then orbit and zoom while temperatures evolve.
 
